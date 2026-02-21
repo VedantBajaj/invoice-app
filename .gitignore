@@ -1,0 +1,25 @@
+# PocketBase binary (platform-specific)
+pocketbase
+pocketbase.exe
+
+# PocketBase data (runtime database)
+pb_data/
+
+# Node modules
+scripts/node_modules/
+
+# Environment / credentials
+.env
+.env.*
+
+# Import data files
+scripts/data/
+*.xlsx
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Private integration docs
+docs/raintek-*
+docs/private/

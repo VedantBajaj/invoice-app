@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#4F46E5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Invoice Manager</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icons/icon-192.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { primary: '#4F46E5', 'primary-dark': '#4338CA' }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/gh/pocketbase/js-sdk@master/dist/pocketbase.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="bg-gray-50 min-h-screen" x-data="appRoot()" x-init="init()" @toast.window="toast($event.detail.msg, $event.detail.type)">
+
+  <!-- Toast notification -->
+  <div x-show="toastMsg" x-transition
+    class="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-lg text-white text-sm"
+    :class="toastType === 'error' ? 'bg-red-500' : 'bg-green-500'"
+    x-text="toastMsg"></div>
+
+  <!-- ===== LOGIN PAGE ===== -->
+  <div x-show="page === 'login'" x-data="loginPage()" class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-white rounded-2xl shadow-lg p-8">
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-primary rounded-2xl mx-auto mb-4 flex items-center justify-center">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <h1 class="text-xl font-bold text-gray-900">Invoice Manager</h1>
+        <p class="text-gray-500 text-sm mt-1">Sign in to continue</p>
+      </div>
+      <div x-show="error" class="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg" x-text="error"></div>
+      <form @submit.prevent="login()">
+        <input x-model="email" type="email" placeholder="Email" required
+          class="w-full px-4 py-3 mb-3 border rounded-lg text-base focus:ring-2 focus:ring-primary focus:border-primary">
+        <input x-model="password" type="password" placeholder="Password" required
+          class="w-full px-4 py-3 mb-4 border rounded-lg text-base focus:ring-2 focus:ring-primary focus:border-primary">
+        <button type="submit" :disabled="submitting"
+          class="w-full py-3 bg-primary text-white rounded-lg font-semibold text-base active:bg-primary-dark disabled:opacity-50">
+          <span x-show="!submitting">Sign In</span>
+          <span x-show="submitting">Signing in...</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MAIN APP (authenticated) ===== -->
+  <div x-show="page !== 'login'" class="pb-20">
+
+    <!-- Top bar -->
+    <header class="bg-primary text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+      <h2 class="font-semibold text-lg truncate" x-text="{
+        'dashboard': 'Dashboard',
+        'invoice-new': 'New Invoice',
+        'invoice-list': 'Invoices',
+        'invoice-view': 'Invoice',
+        'products': 'Products',
+        'customers': 'Customers',
+        'suppliers': 'Suppliers',
+        'stock': 'Stock',
+        'reports': 'Reports',
+        'settings': 'Settings',
+        'users': 'Users',
+        'import': 'Import Products',
+        'more': 'More',
+      }[page] || 'Invoice Manager'"></h2>
+      <div class="flex items-center gap-3">
+        <span class="text-xs opacity-75" x-text="$store.auth.user?.name"></span>
+        <button @click="api.logout(); page='login'; window.location.hash=''" class="text-white/80 hover:text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main class="max-w-lg mx-auto px-4 py-4">
+
+      <!-- DASHBOARD -->
+      <template x-if="page === 'dashboard'">
+      <div x-data="dashboardPage()" x-init="init()">
+        <template x-if="loading">
+          <div class="text-center py-12 text-gray-400">Loading...</div>
+        </template>
+        <template x-if="!loading">
+          <div>
+            <!-- Stats cards -->
+            <div class="grid grid-cols-2 gap-3 mb-6">
+              <div class="bg-white rounded-xl p-4 shadow-sm">
+                <div class="text-2xl font-bold text-primary" x-text="stats.todayCount"></div>
+                <div class="text-xs text-gray-500 mt-1">Today's Invoices</div>
+              </div>
+              <div class="bg-white rounded-xl p-4 shadow-sm">
+                <div class="text-2xl font-bold text-green-600" x-text="formatCurrency(stats.todayTotal)"></div>
+                <div class="text-xs text-gray-500 mt-1">Today's Sales</div>
+              </div>
+              <div class="bg-white rounded-xl p-4 shadow-sm" :class="stats.lowStockCount > 0 ? 'border-l-4 border-yellow-400' : ''">
+                <div class="text-2xl font-bold" :class="stats.lowStockCount > 0 ? 'text-yellow-600' : 'text-gray-400'" x-text="stats.lowStockCount"></div>
+                <div class="text-xs text-gray-500 mt-1">Low Stock</div>
+              </div>
+              <div class="bg-white rounded-xl p-4 shadow-sm" :class="stats.negativeStockCount > 0 ? 'border-l-4 border-red-400' : ''">
+                <div class="text-2xl font-bold" :class="stats.negativeStockCount > 0 ? 'text-red-600' : 'text-gray-400'" x-text="stats.negativeStockCount"></div>
+                <div class="text-xs text-gray-500 mt-1">Negative Stock</div>
+              </div>
+            </div>
+
+            <!-- Quick actions -->
+            <button @click="goto('#invoice')"
+              class="w-full py-4 bg-primary text-white rounded-xl font-semibold text-lg mb-4 active:bg-primary-dark flex items-center justify-center gap-2">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              New Invoice
+            </button>
+
+            <!-- Recent invoices -->
+            <h3 class="text-sm font-semibold text-gray-500 mb-2">Recent Invoices</h3>
+            <div class="space-y-2">
+              <template x-for="inv in recentInvoices" :key="inv.id">
+                <div @click="goto('#invoice/' + inv.id)"
+                  class="bg-white rounded-lg p-3 shadow-sm flex justify-between items-center active:bg-gray-50 cursor-pointer">
+                  <div>
+                    <div class="font-medium text-sm" x-text="inv.invoice_number"></div>
+                    <div class="text-xs text-gray-400" x-text="new Date(inv.invoice_date).toLocaleDateString('en-IN')"></div>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-semibold" x-text="'₹' + (inv.grand_total || 0).toLocaleString('en-IN')"></div>
+                    <div class="text-xs" :class="inv.status === 'completed' ? 'text-green-500' : 'text-yellow-500'" x-text="inv.status"></div>
+                  </div>
+                </div>
+              </template>
+              <div x-show="recentInvoices.length === 0" class="text-center py-4 text-gray-400 text-sm">No invoices yet</div>
+            </div>
+          </div>
+        </template>
+      </div>
+      </template>
+
+      <!-- INVOICE NEW -->
+      <template x-if="page === 'invoice-new'">
+      <div x-data="invoiceNewPage()" x-init="init()">
+
+        <!-- SUCCESS SCREEN -->
+        <div x-show="step === 'success'" class="text-center py-8">
+          <div class="text-6xl mb-4">&#10003;</div>
+          <h2 class="text-xl font-bold text-green-600 mb-2">Invoice Created!</h2>
+          <div class="text-2xl font-bold mb-1" x-text="successInvoice?.invoice_number"></div>
+          <div class="text-3xl font-bold text-primary mb-4" x-text="formatCurrency(successInvoice?.grand_total)"></div>
+          <!-- UPI QR on success (if UPI payment) -->
+          <div x-show="paymentMethod === 'upi'"
+            x-effect="if(step === 'success' && paymentMethod === 'upi') $nextTick(() => generateUpiQR('upi-qr-success', successInvoice?.grand_total))"
+            class="mb-4">
+            <div id="upi-qr-success" class="inline-block p-3 bg-white rounded-lg border shadow-sm"></div>
+            <div class="text-xs text-gray-500 mt-2">Scan to pay via UPI</div>
+          </div>
+          <div class="space-y-3">
+            <button @click="const id = successInvoice?.id; newInvoice(); window.location.hash = '#invoice/' + id;"
+              class="w-full py-3 bg-primary text-white rounded-lg font-semibold flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              View / Print / Share Invoice
+            </button>
+            <button @click="newInvoice()" class="w-full py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold">New Invoice</button>
+          </div>
+        </div>
+
+        <!-- MAIN FLOW -->
+        <div x-show="step !== 'success'">
+          <!-- Editing banner -->
+          <div x-show="$store.cart.isEditing" class="mb-4 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 flex justify-between items-center">
+            <span>Editing <strong x-text="$store.cart.editingInvoiceNumber"></strong></span>
+            <button @click="newInvoice()" class="text-xs text-blue-600 underline">Cancel</button>
+          </div>
+          <!-- 1. CUSTOMER + ADD PRODUCTS (single card) -->
+          <div class="bg-white rounded-xl p-4 shadow-sm mb-4">
+            <!-- Customer: mobile (for WhatsApp) + optional name -->
+            <div class="flex gap-2 mb-3 pb-3 border-b border-gray-100">
+              <input x-model="invoiceMobile" inputmode="numeric" pattern="[0-9]*" maxlength="10"
+                placeholder="Mobile no."
+                @input="invoiceMobile.length >= 10 && lookupCustomer()"
+                class="w-36 px-3 py-2 border rounded-lg text-sm shrink-0">
+              <input x-model="invoiceCustomerName" placeholder="Customer name (optional)"
+                class="flex-1 px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <div x-show="customerSearching" class="text-xs text-gray-400 mb-2">Looking up customer...</div>
+            <!-- Product entry -->
+            <div class="flex gap-2 mb-3">
+              <input x-model="barcodeInput" @keyup.enter="lookupBarcode()"
+                inputmode="numeric" pattern="[0-9]*" placeholder="Barcode (4-5 digits)"
+                class="flex-1 px-3 py-3 border rounded-lg text-base">
+              <button @click="lookupBarcode()" class="px-4 py-3 bg-primary text-white rounded-lg text-sm font-medium">Add</button>
+            </div>
+            <!-- Search -->
+            <input x-model="searchQuery" @input="searchProduct()"
+              placeholder="Search by name or code..."
+              class="w-full px-3 py-3 border rounded-lg text-base mb-2">
+            <!-- Search results -->
+            <div x-show="searchResults.length > 0" class="max-h-48 overflow-y-auto border rounded-lg">
+              <template x-for="p in searchResults" :key="p.id">
+                <div @click="addToCart(p)" class="px-3 py-2 border-b last:border-0 active:bg-gray-50 cursor-pointer flex justify-between">
+                  <div>
+                    <div class="text-sm font-medium" x-text="p.name"></div>
+                    <div class="text-xs text-gray-400" x-text="p.product_code + ' | ' + p.barcode"></div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm font-semibold" x-text="'₹' + p.retail_price"></div>
+                    <div class="text-xs" :class="stockClass(p)" x-text="'Stock: ' + p.current_stock"></div>
+                  </div>
+                </div>
+              </template>
+            </div>
+            <!-- No search results — offer to add new product -->
+            <div x-show="searchQuery.length >= 2 && !searching && searchResults.length === 0" class="border border-dashed border-yellow-300 rounded-lg p-3 text-center">
+              <div class="text-sm text-gray-500 mb-2">No products found</div>
+              <button @click="openQuickAddFromSearch()" class="text-sm text-yellow-700 font-semibold underline">+ Add new product</button>
+            </div>
+          </div>
+
+          <!-- Add Sarees -->
+          <div x-data="{ quickCount: 3 }" class="flex gap-2 mb-4 items-center">
+            <button @click="quickCount = Math.max(1, quickCount - 1)" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg font-bold active:bg-gray-200">-</button>
+            <span class="w-8 text-center text-base font-semibold" x-text="quickCount"></span>
+            <button @click="quickCount = Math.min(20, quickCount + 1)" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg font-bold active:bg-gray-200">+</button>
+            <button @click="$store.cart.addQuickBillLines(quickCount); if(navigator.vibrate) navigator.vibrate(50)"
+              class="flex-1 py-3 bg-sky-100 text-sky-700 border border-sky-200 rounded-xl font-semibold text-sm active:bg-sky-200 flex items-center justify-center gap-2">
+              + Add Sarees
+            </button>
+          </div>
+
+          <!-- Quick-add product (when barcode not found) -->
+          <div x-show="showQuickAdd" class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
+            <div class="flex justify-between items-center mb-3">
+              <div class="text-sm font-semibold text-yellow-800">Product not found — Add new</div>
+              <button @click="showQuickAdd = false" class="text-gray-400 text-xs">Cancel</button>
+            </div>
+            <div class="space-y-2">
+              <input x-model="quickAddName" placeholder="Product name"
+                class="w-full px-3 py-2 border rounded-lg text-sm">
+              <input x-model="quickAddBarcode" inputmode="numeric" placeholder="Barcode (optional)"
+                class="w-full px-3 py-2 border rounded-lg text-sm">
+              <input x-model="quickAddPrice" type="number" inputmode="decimal" placeholder="Price (₹)"
+                class="w-full px-3 py-2 border rounded-lg text-sm">
+              <button @click="quickAddProduct()" :disabled="!quickAddName || !quickAddPrice || quickAddSaving"
+                class="w-full py-2 bg-yellow-500 text-white rounded-lg text-sm font-semibold disabled:opacity-50">
+                <span x-show="!quickAddSaving">Add Product & Continue</span>
+                <span x-show="quickAddSaving">Creating...</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. CART -->
+          <div class="mb-4">
+            <div class="flex justify-between items-center mb-2">
+              <h3 class="text-sm font-semibold text-gray-500" x-text="'Cart (' + $store.cart.itemCount + ' items)'"></h3>
+              <button x-show="$store.cart.items.length > 0" @click="$store.cart.clear()"
+                class="text-xs text-red-500 font-medium px-2 py-1 rounded hover:bg-red-50">Clear All</button>
+            </div>
+            <div x-show="$store.cart.items.length === 0" class="text-center py-4 text-gray-300 text-sm">Scan or search to add items</div>
+            <div class="space-y-2">
+              <template x-for="(item, idx) in $store.cart.items" :key="item.product_id">
+                <div class="bg-white rounded-lg p-3 shadow-sm">
+                  <div class="flex justify-between items-start mb-2">
+                    <div class="flex-1 mr-2">
+                      <div x-show="!item.product_id?.startsWith('quick_')" class="text-sm font-medium" x-text="item.name"></div>
+                      <input x-show="item.product_id?.startsWith('quick_')" :value="item.name"
+                        @blur="item.name = $event.target.value || item.name; $store.cart._save()"
+                        @keyup.enter="$event.target.blur()"
+                        class="text-sm font-medium w-full border-0 bg-transparent px-0 py-0 outline-none">
+                      <div x-show="item.product_code || item.barcode" class="text-xs text-gray-400" x-text="(item.product_code || '') + (item.product_code && item.barcode ? ' | ' : '') + (item.barcode || '')"></div>
+                      <div x-show="!item.product_id?.startsWith('quick_')" class="text-xs" :class="item.current_stock < 0 ? 'text-red-500' : item.current_stock < item.min_stock ? 'text-yellow-500' : 'text-green-500'"
+                        x-text="'Stock: ' + item.current_stock"></div>
+                    </div>
+                    <button @click="$store.cart.removeItem(idx)" class="text-red-400 p-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <button @click="$store.cart.updateQty(idx, item.quantity - 1)" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-lg">-</button>
+                      <input :value="item.quantity" @change="$store.cart.updateQty(idx, parseInt($event.target.value) || 1)"
+                        inputmode="numeric" class="w-12 text-center border rounded py-1 text-base">
+                      <button @click="$store.cart.updateQty(idx, item.quantity + 1)" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-lg">+</button>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-sm font-bold" x-text="'₹' + item.line_total.toLocaleString('en-IN')"></div>
+                      <div class="flex items-center justify-end gap-1 mt-0.5">
+                        <span class="text-xs text-gray-400">₹</span>
+                        <input :placeholder="item.unit_price" value=""
+                          @focus="$event.target.value = ''"
+                          @blur="if ($event.target.value !== '') { $store.cart.updatePrice(idx, parseFloat($event.target.value) || 0); } $event.target.value = ''"
+                          type="number" inputmode="decimal" class="w-16 text-right border rounded px-1 py-0.5 text-xs">
+                        <span class="text-xs text-gray-400" x-text="'× ' + item.quantity"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <!-- Summary -->
+            <div class="bg-white rounded-xl p-4 shadow-sm mt-3">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-500">Subtotal (incl. GST)</span>
+                <span x-text="formatCurrency($store.cart.subtotal)"></span>
+              </div>
+              <!-- Discount controls -->
+              <div class="mb-3">
+                <div class="flex items-center gap-1">
+                  <span class="text-xs text-gray-500 mr-1">Discount</span>
+                  <span class="flex-1"></span>
+                  <button @click="$store.cart.setDiscount(0)" x-show="$store.cart.discountAmount > 0"
+                    class="px-2 py-0.5 bg-red-50 text-red-500 rounded text-xs font-medium border border-red-200 mr-2">Clear</button>
+                  <span class="flex-1"></span>
+                  <button @click="$store.cart.discountDown()" class="w-9 h-9 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-lg font-bold border border-red-200">-</button>
+                  <input type="number" inputmode="numeric" min="0" :max="$store.cart.subtotal"
+                    :value="$store.cart.discountAmount"
+                    @change="$store.cart.setDiscount(parseFloat($event.target.value) || 0)"
+                    class="w-20 px-2 py-2 border rounded-lg text-base text-center">
+                  <button @click="$store.cart.discountUp()" class="w-9 h-9 rounded-full bg-green-50 text-green-600 flex items-center justify-center text-lg font-bold border border-green-200">+</button>
+                </div>
+              </div>
+              <div x-show="$store.cart.discountAmount > 0" class="flex justify-between text-sm text-red-500 mb-1">
+                <span>Discount</span>
+                <span x-text="'-' + formatCurrency($store.cart.discountAmount)"></span>
+              </div>
+              <div class="flex justify-between text-lg font-bold border-t pt-2">
+                <span>Total</span>
+                <span class="text-primary" x-text="formatCurrency($store.cart.grandTotal)"></span>
+              </div>
+
+              <!-- Payment -->
+              <div class="mt-4">
+                <div class="text-sm text-gray-500 mb-2">Payment Method</div>
+                <div class="grid grid-cols-4 gap-2 mb-4">
+                  <button @click="paymentMethod = 'cash'" :class="paymentMethod === 'cash' ? 'bg-primary text-white' : 'bg-gray-100'"
+                    class="py-2 rounded-lg text-sm font-medium">Cash</button>
+                  <button @click="paymentMethod = 'upi'" :class="paymentMethod === 'upi' ? 'bg-primary text-white' : 'bg-gray-100'"
+                    class="py-2 rounded-lg text-sm font-medium">UPI</button>
+                  <button @click="paymentMethod = 'card'" :class="paymentMethod === 'card' ? 'bg-primary text-white' : 'bg-gray-100'"
+                    class="py-2 rounded-lg text-sm font-medium">Card</button>
+                  <button @click="paymentMethod = 'credit'" :class="paymentMethod === 'credit' ? 'bg-primary text-white' : 'bg-gray-100'"
+                    class="py-2 rounded-lg text-sm font-medium">Credit</button>
+                </div>
+                <!-- UPI QR Code -->
+                <div x-show="paymentMethod === 'upi'" x-effect="if(paymentMethod === 'upi') $nextTick(() => generateUpiQR('upi-qr-payment', $store.cart.grandTotal))"
+                  class="mb-4 text-center">
+                  <div id="upi-qr-payment" class="inline-block p-3 bg-white rounded-lg border"></div>
+                  <div class="text-xs text-gray-500 mt-2">Scan to pay <span class="font-bold" x-text="'₹' + $store.cart.grandTotal.toLocaleString('en-IN')"></span></div>
+                </div>
+                <button @click="generateInvoice()" :disabled="submitting"
+                  class="w-full py-4 bg-green-600 text-white rounded-xl font-bold text-lg active:bg-green-700 disabled:opacity-50">
+                  <span x-show="!submitting" x-text="$store.cart.isEditing ? 'Update Invoice' : 'Generate Invoice'"></span>
+                  <span x-show="submitting" x-text="$store.cart.isEditing ? 'Updating...' : 'Creating...'"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </template>
+
+      <!-- PRODUCTS -->
+      <template x-if="page === 'products'">
+      <div x-data="productsPage()" x-init="init()">
+        <div class="flex gap-2 mb-4 sticky top-14 bg-gray-50 z-10 py-1">
+          <input x-model="searchQuery" @input="search()" placeholder="Search products..."
+            class="flex-1 px-4 py-3 border rounded-lg text-base bg-white">
+          <button @click="showAddForm = !showAddForm" class="px-4 py-3 bg-primary text-white rounded-lg text-sm font-semibold whitespace-nowrap"
+            x-text="showAddForm ? 'Cancel' : '+ Add'"></button>
+        </div>
+
+        <!-- Add product form -->
+        <div x-show="showAddForm" class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
+          <div class="text-sm font-semibold text-yellow-800 mb-3">Add New Product</div>
+          <div class="space-y-2">
+            <input x-model="addName" placeholder="Product name *" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <div class="flex gap-2">
+              <input x-model="addBarcode" inputmode="numeric" placeholder="Barcode" class="flex-1 px-3 py-2 border rounded-lg text-sm">
+              <input x-model="addPrice" type="number" inputmode="decimal" placeholder="Retail price *" class="flex-1 px-3 py-2 border rounded-lg text-sm">
+            </div>
+            <button @click="addProduct()" :disabled="!addName || !addPrice || addSaving"
+              class="w-full py-2 bg-yellow-500 text-white rounded-lg text-sm font-semibold disabled:opacity-50">
+              <span x-show="!addSaving">Add Product</span>
+              <span x-show="addSaving">Creating...</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Product detail modal -->
+        <div x-show="selected" x-transition.opacity class="fixed inset-0 bg-black/50 z-50 flex items-end justify-center" @click.self="closeDetail()">
+          <div class="bg-white rounded-t-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto" @click.stop>
+            <!-- Header -->
+            <div class="sticky top-0 bg-white px-4 pt-4 pb-2 border-b flex justify-between items-start">
+              <div>
+                <div class="font-bold text-base" x-text="selected?.name"></div>
+                <div class="text-xs text-gray-400" x-text="selected?.product_code"></div>
+              </div>
+              <button @click="closeDetail()" class="p-1 text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <!-- Details -->
+            <div class="p-4 space-y-3">
+              <!-- Price section -->
+              <div class="grid grid-cols-2 gap-3">
+                <div class="bg-green-50 rounded-lg p-3">
+                  <div class="text-[10px] text-gray-500 uppercase">Sale Price</div>
+                  <div class="text-lg font-bold text-green-700" x-text="'₹' + (selected?.retail_price || 0).toLocaleString('en-IN')"></div>
+                </div>
+                <div class="bg-blue-50 rounded-lg p-3">
+                  <div class="text-[10px] text-gray-500 uppercase">MRP</div>
+                  <div class="text-lg font-bold text-blue-700" x-text="'₹' + (selected?.mrp || 0).toLocaleString('en-IN')"></div>
+                </div>
+                <div x-show="$store.auth.isAdmin()" class="bg-red-50 rounded-lg p-3">
+                  <div class="text-[10px] text-gray-500 uppercase">Purchase Price</div>
+                  <div class="text-lg font-bold text-red-600" x-text="'₹' + (selected?.purchase_price || 0).toLocaleString('en-IN')"></div>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-3" x-show="selected?.wholesale_price > 0">
+                  <div class="text-[10px] text-gray-500 uppercase">Wholesale</div>
+                  <div class="text-lg font-bold text-purple-700" x-text="'₹' + (selected?.wholesale_price || 0).toLocaleString('en-IN')"></div>
+                </div>
+              </div>
+              <!-- Stock -->
+              <div class="bg-gray-50 rounded-lg p-3 flex justify-between items-center">
+                <div>
+                  <div class="text-[10px] text-gray-500 uppercase">Current Stock</div>
+                  <div class="text-lg font-bold" :class="(selected?.current_stock || 0) < 0 ? 'text-red-500' : (selected?.current_stock || 0) <= (selected?.min_stock || 0) ? 'text-yellow-500' : 'text-green-600'"
+                    x-text="selected?.current_stock || 0"></div>
+                </div>
+                <div x-show="selected?.min_stock > 0" class="text-right">
+                  <div class="text-[10px] text-gray-500 uppercase">Min Stock</div>
+                  <div class="text-sm text-gray-600" x-text="selected?.min_stock"></div>
+                </div>
+              </div>
+              <!-- Info grid -->
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between py-1.5 border-b border-gray-100" x-show="selected?.barcode">
+                  <span class="text-gray-500">Barcode</span>
+                  <span class="font-medium" x-text="selected?.barcode"></span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-gray-100" x-show="selected?.hsn_code && selected?.hsn_code !== '0'">
+                  <span class="text-gray-500">HSN Code</span>
+                  <span class="font-medium" x-text="selected?.hsn_code"></span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-gray-100" x-show="selected?.unit">
+                  <span class="text-gray-500">Unit</span>
+                  <span class="font-medium" x-text="selected?.unit || 'PCS'"></span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-gray-100" x-show="selected?.batch">
+                  <span class="text-gray-500">Batch</span>
+                  <span class="font-medium" x-text="selected?.batch"></span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-gray-100" x-show="selected?.size">
+                  <span class="text-gray-500">Size</span>
+                  <span class="font-medium" x-text="selected?.size"></span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-gray-100" x-show="selected?.colour">
+                  <span class="text-gray-500">Colour</span>
+                  <span class="font-medium" x-text="selected?.colour"></span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-gray-100" x-show="(selected?.discount_pct || 0) > 0">
+                  <span class="text-gray-500">Discount</span>
+                  <span class="font-medium" x-text="(selected?.discount_pct || 0) + '%'"></span>
+                </div>
+                <div class="flex justify-between py-1.5" x-show="selected?.description && selected?.description !== selected?.name">
+                  <span class="text-gray-500">Description</span>
+                  <span class="font-medium text-right max-w-[60%]" x-text="selected?.description"></span>
+                </div>
+              </div>
+              <!-- Admin: margin info -->
+              <div x-show="$store.auth.isAdmin() && (selected?.purchase_price || 0) > 0" class="bg-yellow-50 rounded-lg p-3 mt-2">
+                <div class="text-[10px] text-gray-500 uppercase mb-1">Margin</div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600">Amount</span>
+                  <span class="font-bold text-green-700" x-text="'₹' + ((selected?.retail_price || 0) - (selected?.purchase_price || 0)).toLocaleString('en-IN')"></span>
+                </div>
+                <div class="flex justify-between text-sm mt-1">
+                  <span class="text-gray-600">Percentage</span>
+                  <span class="font-bold text-green-700" x-text="((selected?.purchase_price || 0) > 0 ? (((selected.retail_price - selected.purchase_price) / selected.purchase_price) * 100).toFixed(1) : '0') + '%'"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div x-show="loading" class="text-center py-8 text-gray-400">Loading...</div>
+        <div x-show="!loading" class="space-y-2">
+          <template x-for="p in products" :key="p.id">
+            <div @click="openDetail(p)" class="bg-white rounded-lg p-3 shadow-sm flex justify-between items-center active:bg-gray-50 cursor-pointer">
+              <div>
+                <div class="font-medium text-sm" x-text="p.name"></div>
+                <div class="text-xs text-gray-400" x-text="p.product_code + ' | BC: ' + (p.barcode || '-')"></div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-semibold" x-text="'₹' + p.retail_price"></div>
+                <div class="text-xs" :class="p.current_stock < 0 ? 'text-red-500' : p.current_stock < p.min_stock ? 'text-yellow-500' : 'text-green-500'"
+                  x-text="'Stock: ' + p.current_stock"></div>
+              </div>
+            </div>
+          </template>
+          <div x-show="products.length === 0" class="text-center py-8 text-gray-400 text-sm">No products found</div>
+          <div x-show="totalPages > 1" class="flex justify-center gap-2 pt-4">
+            <button @click="page > 1 && (page--, search())" :disabled="page <= 1" class="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-30">Prev</button>
+            <span class="px-3 py-2 text-sm text-gray-500" x-text="page + '/' + totalPages"></span>
+            <button @click="page < totalPages && (page++, search())" :disabled="page >= totalPages" class="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-30">Next</button>
+          </div>
+        </div>
+      </div>
+      </template>
+
+      <!-- INVOICE LIST -->
+      <template x-if="page === 'invoice-list'">
+      <div x-data="invoiceListPage()" x-init="init()">
+        <div x-show="loading" class="text-center py-8 text-gray-400">Loading...</div>
+        <div x-show="!loading" class="space-y-2">
+          <template x-for="inv in invoices" :key="inv.id">
+            <div @click="window.location.hash = '#invoice/' + inv.id"
+              class="bg-white rounded-lg p-3 shadow-sm flex justify-between items-center active:bg-gray-50 cursor-pointer">
+              <div>
+                <div class="font-medium text-sm" x-text="inv.invoice_number"></div>
+                <div class="text-xs text-gray-400" x-text="new Date(inv.invoice_date).toLocaleDateString('en-IN')"></div>
+                <div class="text-xs text-gray-400" x-text="inv.expand?.customer?.name || 'Cash'"></div>
+              </div>
+              <div class="text-right">
+                <div class="font-semibold" x-text="'₹' + (inv.grand_total || 0).toLocaleString('en-IN')"></div>
+                <div class="text-xs" :class="inv.status === 'completed' ? 'text-green-500' : 'text-yellow-500'" x-text="inv.status"></div>
+                <div x-show="inv.expand?.created_by" class="text-[10px] text-gray-300" x-text="inv.expand?.created_by?.name"></div>
+              </div>
+            </div>
+          </template>
+          <div x-show="invoices.length === 0" class="text-center py-8 text-gray-400 text-sm">No invoices found</div>
+          <div x-show="totalPages > 1" class="flex justify-center gap-2 pt-4">
+            <button @click="page > 1 && (page--, load())" :disabled="page <= 1" class="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-30">Prev</button>
+            <span class="px-3 py-2 text-sm text-gray-500" x-text="page + '/' + totalPages"></span>
+            <button @click="page < totalPages && (page++, load())" :disabled="page >= totalPages" class="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-30">Next</button>
+          </div>
+        </div>
+      </div>
+      </template>
+
+      <!-- INVOICE VIEW -->
+      <template x-if="page === 'invoice-view'">
+      <div x-data="invoiceViewPage()" x-init="init()">
+        <div x-show="loading" class="text-center py-8 text-gray-400">Loading...</div>
+        <template x-if="!loading && invoice">
+          <div>
+            <!-- Revised banner -->
+            <div x-show="isRevised" class="mb-4 px-4 py-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800 no-print">
+              This is an old version of this invoice. It was revised on <span x-text="fmtDate(invoice.updated)"></span>.
+            </div>
+
+            <!-- Created by (screen only) -->
+            <div x-show="createdByName" class="text-xs text-gray-400 mb-2 no-print">Created by <span x-text="createdByName" class="font-medium text-gray-500"></span></div>
+
+            <!-- Action buttons (top, screen only) -->
+            <div class="flex gap-2 mb-4 no-print">
+              <button x-show="!isRevised" @click="editInvoice()" class="py-3 px-3 bg-gray-100 text-gray-600 rounded-lg flex items-center justify-center" title="Edit invoice">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+              </button>
+              <button @click="window.print()" class="flex-1 py-3 bg-primary text-white rounded-lg font-semibold flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Print
+              </button>
+              <button @click="shareWhatsApp()" class="flex-1 py-3 bg-green-500 text-white rounded-lg font-semibold flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                WhatsApp
+              </button>
+              <button @click="shareImage()" class="py-3 px-3 bg-gray-100 text-gray-600 rounded-lg flex items-center justify-center" title="Share as image">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </button>
+            </div>
+
+            <!-- Invoice document -->
+            <div class="bg-white rounded-xl shadow-sm invoice-doc" style="font-size:13px;">
+              <!-- Shop header -->
+              <div class="text-center p-4 pb-2 border-b">
+                <div class="text-lg font-bold" x-text="shopName"></div>
+                <div x-show="shopAddress" class="text-xs text-gray-500" x-text="shopAddress"></div>
+                <div x-show="shopPhone" class="text-xs text-gray-500" x-text="'Ph: ' + shopPhone"></div>
+                <div x-show="shopGSTIN" class="text-xs text-gray-500" x-text="'GSTIN: ' + shopGSTIN"></div>
+              </div>
+
+              <!-- Tax Invoice title + invoice info -->
+              <div class="px-4 py-2 border-b">
+                <div class="text-center text-xs font-semibold text-gray-500 mb-2">TAX INVOICE</div>
+                <div class="flex justify-between text-xs">
+                  <div>
+                    <span class="text-gray-500">No:</span>
+                    <span class="font-semibold" x-text="invoice.invoice_number"></span>
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Date:</span>
+                    <span x-text="fmtDate(invoice.invoice_date)"></span>
+                  </div>
+                </div>
+                <div class="flex justify-between text-xs mt-1">
+                  <div>
+                    <span class="text-gray-500">Customer:</span>
+                    <span x-text="customerName"></span>
+                  </div>
+                  <div x-show="customerMobile && customerMobile !== '0000000000'">
+                    <span class="text-gray-500">Mobile:</span>
+                    <span x-text="customerMobile"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Items table -->
+              <div class="px-4 py-2">
+                <table class="w-full text-xs">
+                  <thead>
+                    <tr class="border-b text-gray-500">
+                      <th class="text-left py-1 font-medium">#</th>
+                      <th class="text-left py-1 font-medium">Item</th>
+                      <th class="text-center py-1 font-medium">Qty</th>
+                      <th class="text-right py-1 font-medium">Rate</th>
+                      <th class="text-right py-1 font-medium">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template x-for="(item, idx) in items" :key="item.id">
+                      <tr class="border-b border-gray-100">
+                        <td class="py-1.5 text-gray-400" x-text="idx + 1"></td>
+                        <td class="py-1.5">
+                          <div x-text="item.product_name"></div>
+                          <div class="text-[10px] text-gray-400" x-text="(item.hsn_code && item.hsn_code !== '0' ? 'HSN: ' + item.hsn_code + ' | ' : '') + item.product_code"></div>
+                        </td>
+                        <td class="py-1.5 text-center" x-text="item.quantity + ' ' + (item.unit || 'PCS')"></td>
+                        <td class="py-1.5 text-right" x-text="'₹' + fmt(item.unit_price)"></td>
+                        <td class="py-1.5 text-right font-medium" x-text="'₹' + fmt(item.total)"></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Totals — always reserve space for discount/adjustment rows to prevent layout jumps -->
+              <div class="px-4 py-2 border-t">
+                <div :class="(invoice.discount_total > 0 || (invoice.adjustment || 0) > 0 || showAdjustment) ? '' : 'hidden'" class="flex justify-between text-xs mb-0.5">
+                  <span class="text-gray-500">Subtotal</span>
+                  <span x-text="'₹' + fmt(invoice.subtotal)"></span>
+                </div>
+                <div :class="(invoice.discount_total > 0 || showAdjustment) ? '' : 'hidden'" class="flex justify-between text-xs text-red-500 mb-0.5">
+                  <span>Discount</span>
+                  <span x-text="invoice.discount_total > 0 ? '-₹' + fmt(invoice.discount_total) : '—'"></span>
+                </div>
+                <div :class="((invoice.adjustment || 0) > 0 || showAdjustment) ? '' : 'hidden'" class="flex justify-between text-xs text-red-500 mb-1">
+                  <span>Adjustment</span>
+                  <span x-text="(invoice.adjustment || 0) > 0 ? '-₹' + fmt(invoice.adjustment) : '—'"></span>
+                </div>
+                <div class="flex justify-between text-base font-bold border-t pt-2 mb-0.5">
+                  <span>Total <span class="text-xs font-normal text-gray-400">(incl. GST)</span></span>
+                  <span x-text="'₹' + fmt(invoice.grand_total)"></span>
+                </div>
+              </div>
+
+              <!-- Payment & footer -->
+              <div class="px-4 py-2 border-t text-xs text-gray-500">
+                <div class="flex justify-between">
+                  <span>Payment: <span class="font-medium text-gray-700 capitalize" x-text="invoice.payment_method"></span></span>
+                  <span x-text="'Status: ' + invoice.status" class="capitalize"></span>
+                </div>
+              </div>
+
+              <!-- Thank you -->
+              <div class="text-center py-3 text-xs text-gray-400 border-t">
+                Thank you for your purchase!
+              </div>
+            </div>
+
+            <!-- Edit invoice (screen only, not on revised invoices) -->
+            <div x-show="!isRevised" class="mt-4 no-print">
+              <button x-show="!showAdjustment" @click="showAdjustment = true"
+                class="w-full py-3 text-gray-400 text-xs flex items-center justify-center gap-1 hover:text-gray-600">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                Edit
+              </button>
+              <div x-show="showAdjustment" x-transition class="bg-white rounded-xl p-4 shadow-sm">
+                <div class="flex items-center gap-1">
+                  <span class="text-sm text-gray-500" x-show="!saving">Adjustment</span>
+                  <span class="text-xs text-gray-400" x-show="saving">Saving...</span>
+                  <span class="flex-1"></span>
+                  <button @click="setAdjustment(0)" x-show="(invoice.adjustment || 0) > 0" :disabled="saving"
+                    class="px-2 py-0.5 bg-red-50 text-red-500 rounded text-xs font-medium border border-red-200 mr-2">Clear</button>
+                  <span class="flex-1"></span>
+                  <button @click="adjustmentDown()" :disabled="saving" class="w-9 h-9 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-lg font-bold border border-red-200 disabled:opacity-30">-</button>
+                  <input type="number" inputmode="numeric" min="0" :max="invoice.subtotal - invoice.discount_total"
+                    :value="invoice.adjustment || 0"
+                    @change="setAdjustment(parseFloat($event.target.value) || 0)"
+                    class="w-20 px-2 py-2 border rounded-lg text-base text-center">
+                  <button @click="adjustmentUp()" :disabled="saving" class="w-9 h-9 rounded-full bg-green-50 text-green-600 flex items-center justify-center text-lg font-bold border border-green-200 disabled:opacity-30">+</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- UPI QR Code (below invoice) -->
+            <div x-show="hasUpiId" class="text-center mt-4 no-print"
+              x-effect="if(hasUpiId && invoice) $nextTick(() => generateUpiQR('upi-qr-view', invoice.grand_total))">
+              <div id="upi-qr-view" class="inline-block p-3 bg-white rounded-lg border shadow-sm"></div>
+              <div class="text-xs text-gray-500 mt-2">Scan to pay <span class="font-bold" x-text="'₹' + fmt(invoice.grand_total)"></span></div>
+            </div>
+          </div>
+        </template>
+      </div>
+      </template>
+
+      <!-- CUSTOMERS -->
+      <template x-if="page === 'customers'">
+      <div x-data="customersPage()" x-init="init()">
+        <input x-model="searchQuery" @input="search()" placeholder="Search customers..."
+          class="w-full px-4 py-3 border rounded-lg text-base mb-4">
+        <div x-show="loading" class="text-center py-8 text-gray-400">Loading...</div>
+        <div x-show="!loading" class="space-y-2">
+          <template x-for="c in customers" :key="c.id">
+            <div class="bg-white rounded-lg p-3 shadow-sm">
+              <div class="font-medium text-sm" x-text="c.name"></div>
+              <div class="text-xs text-gray-400" x-text="c.mobile + (c.city ? ' • ' + c.city : '')"></div>
+            </div>
+          </template>
+          <div x-show="customers.length === 0" class="text-center py-8 text-gray-400 text-sm">No customers found</div>
+        </div>
+      </div>
+      </template>
+
+      <!-- IMPORT PRODUCTS -->
+      <template x-if="page === 'import'">
+      <div x-data="importPage()">
+        <!-- File picker -->
+        <div class="bg-white rounded-xl p-4 shadow-sm mb-4">
+          <div class="text-sm font-semibold text-gray-700 mb-3">Import Products from Excel</div>
+          <p class="text-xs text-gray-400 mb-3">Upload an .xlsx file exported from your external app. Existing products will be updated, new ones will be added.</p>
+          <input type="file" accept=".xlsx,.xls" @change="onFileSelect($event)" x-ref="fileInput"
+            class="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white file:active:bg-primary-dark">
+          <div x-show="fileName" class="mt-2 text-xs text-gray-500" x-text="'File: ' + fileName"></div>
+        </div>
+
+        <!-- Parsing progress -->
+        <div x-show="parsing" class="bg-blue-50 rounded-xl p-4 mb-4 text-center">
+          <div class="text-sm text-blue-700 mb-2">Analyzing...</div>
+          <div class="text-xs text-blue-500" x-text="progressMsg"></div>
+        </div>
+
+        <!-- Preview -->
+        <template x-if="parsed && !importDone">
+        <div>
+          <!-- Stats cards -->
+          <div class="grid grid-cols-3 gap-2 mb-4">
+            <div class="bg-green-50 rounded-xl p-3 text-center border border-green-200 cursor-pointer" @click="viewFilter = 'new'"
+              :class="viewFilter === 'new' ? 'ring-2 ring-green-400' : ''">
+              <div class="text-xl font-bold text-green-600" x-text="newProducts.length"></div>
+              <div class="text-[10px] text-green-700">New</div>
+            </div>
+            <div class="bg-blue-50 rounded-xl p-3 text-center border border-blue-200 cursor-pointer" @click="viewFilter = 'updated'"
+              :class="viewFilter === 'updated' ? 'ring-2 ring-blue-400' : ''">
+              <div class="text-xl font-bold text-blue-600" x-text="updatedProducts.length"></div>
+              <div class="text-[10px] text-blue-700">To Update</div>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-3 text-center border border-gray-200 cursor-pointer" @click="viewFilter = 'all'"
+              :class="viewFilter === 'all' ? 'ring-2 ring-gray-400' : ''">
+              <div class="text-xl font-bold text-gray-500" x-text="unchangedCount"></div>
+              <div class="text-[10px] text-gray-500">Unchanged</div>
+            </div>
+          </div>
+
+          <!-- Error rows -->
+          <div x-show="errorRows.length > 0" class="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
+            <div class="text-xs font-semibold text-red-700 mb-1" x-text="errorRows.length + ' rows with errors'"></div>
+            <template x-for="(r, i) in errorRows.slice(0, 3)" :key="i">
+              <div class="text-xs text-red-600" x-text="r.product_code + ': ' + r._error"></div>
+            </template>
+          </div>
+
+          <!-- Preview list -->
+          <div class="space-y-2 mb-4" style="max-height: 50vh; overflow-y: auto;">
+            <template x-for="(row, idx) in filteredPreview.slice(0, 50)" :key="idx">
+              <div class="bg-white rounded-lg p-3 shadow-sm"
+                :class="['new','created'].includes(row._action) ? 'border-l-4 border-green-400' : ['update','updated'].includes(row._action) ? 'border-l-4 border-blue-400' : 'border-l-4 border-red-400'">
+                <div class="flex justify-between items-start">
+                  <div class="flex-1">
+                    <div class="text-sm font-medium" x-text="row.name"></div>
+                    <div class="text-xs text-gray-400" x-text="row.product_code + ' | BC: ' + (row.barcode || '-')"></div>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium"
+                      :class="['new','created'].includes(row._action) ? 'bg-green-100 text-green-700' : ['update','updated'].includes(row._action) ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'"
+                      x-text="{'new':'NEW','created':'DONE','update':'UPDATE','updated':'DONE','error':'ERROR','unchanged':'OK'}[row._action] || row._action"></span>
+                  </div>
+                </div>
+                <!-- New product details -->
+                <div x-show="['new','created'].includes(row._action)" class="mt-1 text-xs text-gray-500">
+                  <span x-text="'₹' + row.retail_price"></span> •
+                  <span x-text="'Stock: ' + row.current_stock"></span>
+                </div>
+                <!-- Update changes -->
+                <div x-show="['update','updated'].includes(row._action)" class="mt-1 flex flex-wrap gap-1">
+                  <template x-for="(ch, ci) in row._changes" :key="ci">
+                    <span class="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded" x-text="changeLabel(ch)"></span>
+                  </template>
+                </div>
+                <!-- Error -->
+                <div x-show="row._action === 'error'" class="mt-1 text-xs text-red-500" x-text="row._error"></div>
+              </div>
+            </template>
+            <div x-show="filteredPreview.length > 50" class="text-center text-xs text-gray-400 py-2"
+              x-text="'... and ' + (filteredPreview.length - 50) + ' more'"></div>
+            <div x-show="filteredPreview.length === 0" class="text-center text-sm text-gray-400 py-4">No items in this category</div>
+          </div>
+
+          <!-- Import button -->
+          <div class="flex gap-2">
+            <button @click="reset()" class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold text-sm">Cancel</button>
+            <button @click="startImport()" :disabled="importing || (newProducts.length === 0 && updatedProducts.length === 0)"
+              class="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold text-base active:bg-green-700 disabled:opacity-50">
+              <span x-show="!importing" x-text="'Import ' + (newProducts.length + updatedProducts.length) + ' Products'"></span>
+              <span x-show="importing" x-text="'Importing ' + progress + '/' + progressTotal + '...'"></span>
+            </button>
+          </div>
+        </div>
+        </template>
+
+        <!-- Import progress bar -->
+        <div x-show="importing" class="mt-4">
+          <div class="bg-gray-200 rounded-full h-3 mb-2">
+            <div class="bg-primary h-3 rounded-full transition-all" :style="'width: ' + (progressTotal ? Math.round(progress / progressTotal * 100) : 0) + '%'"></div>
+          </div>
+          <div class="text-xs text-center text-gray-500" x-text="progressMsg"></div>
+        </div>
+
+        <!-- Done summary -->
+        <template x-if="importDone">
+        <div class="bg-white rounded-xl p-6 shadow-sm text-center">
+          <div class="text-4xl mb-3">✅</div>
+          <div class="text-lg font-bold text-green-600 mb-4">Import Complete!</div>
+          <div class="grid grid-cols-3 gap-3 mb-6">
+            <div class="bg-green-50 rounded-lg p-3">
+              <div class="text-xl font-bold text-green-600" x-text="summary.created"></div>
+              <div class="text-xs text-green-700">Created</div>
+            </div>
+            <div class="bg-blue-50 rounded-lg p-3">
+              <div class="text-xl font-bold text-blue-600" x-text="summary.updated"></div>
+              <div class="text-xs text-blue-700">Updated</div>
+            </div>
+            <div class="bg-red-50 rounded-lg p-3">
+              <div class="text-xl font-bold text-red-500" x-text="summary.errors"></div>
+              <div class="text-xs text-red-600">Errors</div>
+            </div>
+          </div>
+          <div x-show="summary.errorDetails && summary.errorDetails.length > 0" class="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 text-left">
+            <div class="text-xs font-semibold text-red-700 mb-1">Error details:</div>
+            <template x-for="(err, ei) in summary.errorDetails" :key="ei">
+              <div class="text-xs text-red-600" x-text="err"></div>
+            </template>
+          </div>
+          <button @click="reset()" class="w-full py-3 bg-primary text-white rounded-xl font-semibold">Import Another File</button>
+        </div>
+        </template>
+      </div>
+      </template>
+
+      <!-- MORE MENU -->
+      <template x-if="page === 'more'">
+      <div>
+        <div class="space-y-2">
+          <button @click="goto('#customers')" class="w-full bg-white rounded-lg p-4 shadow-sm flex items-center gap-3 active:bg-gray-50 text-left">
+            <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <div><div class="font-medium text-sm">Customers</div><div class="text-xs text-gray-400">View & manage customers</div></div>
+          </button>
+          <button @click="goto('#suppliers')" class="w-full bg-white rounded-lg p-4 shadow-sm flex items-center gap-3 active:bg-gray-50 text-left">
+            <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center">
+              <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            </div>
+            <div><div class="font-medium text-sm">Suppliers</div><div class="text-xs text-gray-400">Supplier directory</div></div>
+          </button>
+          <button @click="goto('#stock')" class="w-full bg-white rounded-lg p-4 shadow-sm flex items-center gap-3 active:bg-gray-50 text-left">
+            <div class="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center">
+              <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            </div>
+            <div><div class="font-medium text-sm">Stock</div><div class="text-xs text-gray-400">Inventory & adjustments</div></div>
+          </button>
+          <button @click="goto('#reports')" class="w-full bg-white rounded-lg p-4 shadow-sm flex items-center gap-3 active:bg-gray-50 text-left">
+            <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center">
+              <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            </div>
+            <div><div class="font-medium text-sm">Reports</div><div class="text-xs text-gray-400">Sales & GST reports</div></div>
+          </button>
+          <template x-if="$store.auth.isAdmin()">
+          <div class="space-y-2 mt-4">
+            <div class="text-xs font-semibold text-gray-400 uppercase px-1">Admin</div>
+            <button @click="goto('#settings')" class="w-full bg-white rounded-lg p-4 shadow-sm flex items-center gap-3 active:bg-gray-50 text-left">
+              <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <div><div class="font-medium text-sm">Settings</div><div class="text-xs text-gray-400">Shop info, tax, invoice config</div></div>
+            </button>
+            <button @click="goto('#users')" class="w-full bg-white rounded-lg p-4 shadow-sm flex items-center gap-3 active:bg-gray-50 text-left">
+              <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
+                <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+              </div>
+              <div><div class="font-medium text-sm">Users</div><div class="text-xs text-gray-400">Manage user accounts & roles</div></div>
+            </button>
+            <button @click="goto('#import')" class="w-full bg-white rounded-lg p-4 shadow-sm flex items-center gap-3 active:bg-gray-50 text-left">
+              <div class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center">
+                <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              </div>
+              <div><div class="font-medium text-sm">Import Products</div><div class="text-xs text-gray-400">Import from Excel (.xlsx)</div></div>
+            </button>
+          </div>
+          </template>
+        </div>
+      </div>
+      </template>
+
+      <!-- SUPPLIERS -->
+      <template x-if="page === 'suppliers'">
+      <div x-data="suppliersPage()" x-init="init()">
+        <template x-if="editing">
+        <div class="fixed inset-0 bg-black/50 z-50 flex items-end justify-center" @click.self="cancelEdit()">
+          <div class="bg-white rounded-t-2xl w-full max-w-lg p-4 max-h-[80vh] overflow-y-auto">
+            <h3 class="font-semibold mb-3">Edit Supplier</h3>
+            <div class="space-y-2">
+              <input x-model="editing.name" placeholder="Name" class="w-full px-3 py-2 border rounded-lg text-base">
+              <input x-model="editing.mobile" placeholder="Mobile" inputmode="numeric" class="w-full px-3 py-2 border rounded-lg text-base">
+              <input x-model="editing.gstin" placeholder="GSTIN" class="w-full px-3 py-2 border rounded-lg text-base">
+              <input x-model="editing.address" placeholder="Address" class="w-full px-3 py-2 border rounded-lg text-base">
+              <input x-model="editing.city" placeholder="City" class="w-full px-3 py-2 border rounded-lg text-base">
+              <input x-model="editing.state" placeholder="State" class="w-full px-3 py-2 border rounded-lg text-base">
+            </div>
+            <div class="flex gap-2 mt-4">
+              <button @click="cancelEdit()" class="flex-1 py-2 border rounded-lg text-sm">Cancel</button>
+              <button @click="saveEdit()" class="flex-1 py-2 bg-primary text-white rounded-lg text-sm">Save</button>
+            </div>
+          </div>
+        </div>
+        </template>
+        <input x-model="searchQuery" @input="search()" placeholder="Search suppliers..."
+          class="w-full px-4 py-3 border rounded-lg text-base mb-4">
+        <div x-show="loading" class="text-center py-8 text-gray-400">Loading...</div>
+        <div x-show="!loading" class="space-y-2">
+          <template x-for="s in suppliers" :key="s.id">
+            <div @click="$store.auth.canEdit() && edit(s)" class="bg-white rounded-lg p-3 shadow-sm" :class="$store.auth.canEdit() ? 'active:bg-gray-50 cursor-pointer' : ''">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="font-medium text-sm" x-text="s.name"></div>
+                  <div class="text-xs text-gray-400" x-text="s.mobile || 'No mobile'"></div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs text-gray-400" x-text="s.city || ''"></div>
+                  <div class="text-xs text-gray-300" x-text="s.gstin || 'No GSTIN'"></div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <div x-show="suppliers.length === 0" class="text-center py-8 text-gray-400 text-sm">No suppliers found</div>
+        </div>
+      </div>
+      </template>
+
+      <!-- STOCK -->
+      <template x-if="page === 'stock'">
+      <div x-data="stockPage()" x-init="init()">
+        <div class="flex gap-1 mb-4 bg-gray-100 rounded-lg p-1">
+          <button @click="switchTab('low')" class="flex-1 py-2 rounded-md text-xs font-medium" :class="tab === 'low' ? 'bg-white shadow text-primary' : 'text-gray-500'">Low Stock</button>
+          <button @click="switchTab('negative')" class="flex-1 py-2 rounded-md text-xs font-medium" :class="tab === 'negative' ? 'bg-white shadow text-red-500' : 'text-gray-500'">Negative</button>
+          <button @click="switchTab('adjust')" class="flex-1 py-2 rounded-md text-xs font-medium" :class="tab === 'adjust' ? 'bg-white shadow text-primary' : 'text-gray-500'">Adjust</button>
+          <button @click="switchTab('history')" class="flex-1 py-2 rounded-md text-xs font-medium" :class="tab === 'history' ? 'bg-white shadow text-primary' : 'text-gray-500'">History</button>
+        </div>
+        <div x-show="tab === 'low'">
+          <div x-show="loading" class="text-center py-8 text-gray-400">Loading...</div>
+          <div x-show="!loading" class="space-y-2">
+            <template x-for="p in lowStock" :key="p.id">
+              <div class="bg-white rounded-lg p-3 shadow-sm flex justify-between items-center">
+                <div><div class="font-medium text-sm" x-text="p.name"></div><div class="text-xs text-gray-400" x-text="p.product_code + ' | ' + p.barcode"></div></div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold" :class="p.current_stock < 0 ? 'text-red-500' : 'text-yellow-500'" x-text="p.current_stock"></div>
+                  <div class="text-xs text-gray-400" x-text="'Min: ' + p.min_stock"></div>
+                </div>
+              </div>
+            </template>
+            <div x-show="lowStock.length === 0" class="text-center py-8 text-gray-400 text-sm">All stock levels OK</div>
+          </div>
+        </div>
+        <div x-show="tab === 'negative'">
+          <div x-show="loading" class="text-center py-8 text-gray-400">Loading...</div>
+          <div x-show="!loading" class="space-y-2">
+            <template x-for="p in negativeStock" :key="p.id">
+              <div class="bg-white rounded-lg p-3 shadow-sm flex justify-between items-center border-l-4 border-red-400">
+                <div><div class="font-medium text-sm" x-text="p.name"></div><div class="text-xs text-gray-400" x-text="p.product_code"></div></div>
+                <div class="text-sm font-bold text-red-500" x-text="p.current_stock"></div>
+              </div>
+            </template>
+            <div x-show="negativeStock.length === 0" class="text-center py-8 text-gray-400 text-sm">No negative stock items</div>
+          </div>
+        </div>
+        <div x-show="tab === 'adjust'">
+          <div class="bg-white rounded-xl p-4 shadow-sm">
+            <h3 class="text-sm font-semibold text-gray-500 mb-3">Stock Adjustment</h3>
+            <input x-model="searchQuery" @input="searchProduct()" placeholder="Search product..."
+              class="w-full px-3 py-3 border rounded-lg text-base mb-2">
+            <div x-show="searchResults.length > 0" class="max-h-32 overflow-y-auto border rounded-lg mb-2">
+              <template x-for="p in searchResults" :key="p.id">
+                <div @click="selectProduct(p)" class="px-3 py-2 border-b last:border-0 active:bg-gray-50 cursor-pointer text-sm">
+                  <span x-text="p.name"></span> <span class="text-gray-400" x-text="'(Stock: ' + p.current_stock + ')'"></span>
+                </div>
+              </template>
+            </div>
+            <div x-show="adjustProduct" class="mb-3 p-2 bg-blue-50 rounded-lg text-sm">
+              <span x-text="adjustProduct?.name"></span> — Current: <strong x-text="adjustProduct?.current_stock"></strong>
+            </div>
+            <div class="flex gap-2 mb-2">
+              <select x-model="adjustType" class="px-3 py-3 border rounded-lg text-base">
+                <option value="adjustment">Adjustment</option>
+                <option value="purchase">Purchase</option>
+                <option value="return">Return</option>
+              </select>
+              <input x-model.number="adjustQty" type="number" inputmode="numeric" placeholder="Qty (+/-)"
+                class="flex-1 px-3 py-3 border rounded-lg text-base">
+            </div>
+            <input x-model="adjustNote" placeholder="Note (optional)" class="w-full px-3 py-3 border rounded-lg text-base mb-3">
+            <button @click="submitAdjustment()" :disabled="!adjustProduct || !adjustQty"
+              class="w-full py-3 bg-primary text-white rounded-lg font-semibold disabled:opacity-50">Submit Adjustment</button>
+          </div>
+        </div>
+        <div x-show="tab === 'history'">
+          <div x-show="loading" class="text-center py-8 text-gray-400">Loading...</div>
+          <div x-show="!loading" class="space-y-2">
+            <template x-for="m in movements" :key="m.id">
+              <div class="bg-white rounded-lg p-3 shadow-sm flex justify-between items-center">
+                <div><div class="text-sm font-medium" x-text="m.expand?.product?.name || m.product"></div><div class="text-xs text-gray-400" x-text="new Date(m.created).toLocaleDateString('en-IN')"></div></div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold" :class="movementColor(m.type)" x-text="(m.quantity > 0 ? '+' : '') + m.quantity"></div>
+                  <div class="text-xs" :class="movementColor(m.type)" x-text="movementLabel(m.type)"></div>
+                </div>
+              </div>
+            </template>
+            <div x-show="movements.length === 0" class="text-center py-8 text-gray-400 text-sm">No stock movements yet</div>
+            <div x-show="movementTotalPages > 1" class="flex justify-center gap-2 pt-4">
+              <button @click="movementPage > 1 && (movementPage--, loadTab())" :disabled="movementPage <= 1" class="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-30">Prev</button>
+              <span class="px-3 py-2 text-sm text-gray-500" x-text="movementPage + '/' + movementTotalPages"></span>
+              <button @click="movementPage < movementTotalPages && (movementPage++, loadTab())" :disabled="movementPage >= movementTotalPages" class="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-30">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </template>
+
+      <!-- REPORTS -->
+      <template x-if="page === 'reports'">
+      <div x-data="reportsPage()" x-init="init()">
+        <div class="flex gap-1 mb-4 bg-gray-100 rounded-lg p-1">
+          <button @click="switchTab('daily')" class="flex-1 py-2 rounded-md text-xs font-medium" :class="tab === 'daily' ? 'bg-white shadow text-primary' : 'text-gray-500'">Daily</button>
+          <button @click="switchTab('product')" class="flex-1 py-2 rounded-md text-xs font-medium" :class="tab === 'product' ? 'bg-white shadow text-primary' : 'text-gray-500'">Product</button>
+          <button @click="switchTab('gst')" class="flex-1 py-2 rounded-md text-xs font-medium" :class="tab === 'gst' ? 'bg-white shadow text-primary' : 'text-gray-500'">GST</button>
+          <button @click="switchTab('lowstock')" class="flex-1 py-2 rounded-md text-xs font-medium" :class="tab === 'lowstock' ? 'bg-white shadow text-primary' : 'text-gray-500'">Low Stock</button>
+        </div>
+        <div x-show="['daily','product','gst'].includes(tab)" class="flex gap-2 mb-4">
+          <input type="date" x-model="dateFrom" class="flex-1 px-3 py-2 border rounded-lg text-sm">
+          <input type="date" x-model="dateTo" class="flex-1 px-3 py-2 border rounded-lg text-sm">
+          <button @click="loadReport()" class="px-4 py-2 bg-primary text-white rounded-lg text-sm">Go</button>
+        </div>
+        <div x-show="loading" class="text-center py-8 text-gray-400">Loading...</div>
+        <!-- Daily -->
+        <div x-show="!loading && tab === 'daily'">
+          <div class="bg-white rounded-xl p-4 shadow-sm mb-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div><div class="text-xs text-gray-400">Invoices</div><div class="text-lg font-bold" x-text="dailyTotals.count"></div></div>
+              <div><div class="text-xs text-gray-400">Total Sales</div><div class="text-lg font-bold text-green-600" x-text="fmt(dailyTotals.grand)"></div></div>
+              <div><div class="text-xs text-gray-400">CGST</div><div class="text-sm" x-text="fmt(dailyTotals.cgst)"></div></div>
+              <div><div class="text-xs text-gray-400">SGST</div><div class="text-sm" x-text="fmt(dailyTotals.sgst)"></div></div>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <template x-for="inv in dailyData" :key="inv.id">
+              <div class="bg-white rounded-lg p-3 shadow-sm flex justify-between items-center">
+                <div><div class="text-sm font-medium" x-text="inv.invoice_number"></div><div class="text-xs text-gray-400" x-text="inv.expand?.customer?.name || 'Cash'"></div></div>
+                <div class="text-sm font-semibold" x-text="fmt(inv.grand_total)"></div>
+              </div>
+            </template>
+            <div x-show="dailyData.length === 0" class="text-center py-8 text-gray-400 text-sm">No invoices in selected range</div>
+          </div>
+        </div>
+        <!-- Product-wise -->
+        <div x-show="!loading && tab === 'product'">
+          <div class="space-y-2">
+            <template x-for="(p, idx) in productData" :key="idx">
+              <div class="bg-white rounded-lg p-3 shadow-sm flex justify-between items-center">
+                <div><div class="text-sm font-medium" x-text="p.name"></div><div class="text-xs text-gray-400" x-text="'Qty: ' + p.qty"></div></div>
+                <div class="text-sm font-semibold" x-text="fmt(p.total)"></div>
+              </div>
+            </template>
+            <div x-show="productData.length === 0" class="text-center py-8 text-gray-400 text-sm">No data for selected range</div>
+          </div>
+        </div>
+        <!-- GST -->
+        <div x-show="!loading && tab === 'gst'">
+          <div class="bg-white rounded-xl p-4 shadow-sm mb-4">
+            <div class="grid grid-cols-3 gap-3 text-center">
+              <div><div class="text-xs text-gray-400">Taxable</div><div class="font-bold text-sm" x-text="fmt(gstData.reduce((s,i) => s + (i.taxable_total || 0), 0))"></div></div>
+              <div><div class="text-xs text-gray-400">CGST</div><div class="font-bold text-sm" x-text="fmt(gstData.reduce((s,i) => s + (i.cgst_total || 0), 0))"></div></div>
+              <div><div class="text-xs text-gray-400">SGST</div><div class="font-bold text-sm" x-text="fmt(gstData.reduce((s,i) => s + (i.sgst_total || 0), 0))"></div></div>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <template x-for="inv in gstData" :key="inv.id">
+              <div class="bg-white rounded-lg p-3 shadow-sm">
+                <div class="flex justify-between items-center mb-1">
+                  <div class="text-sm font-medium" x-text="inv.invoice_number"></div>
+                  <div class="text-xs text-gray-400" x-text="new Date(inv.invoice_date).toLocaleDateString('en-IN')"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500">
+                  <span x-text="'Taxable: ' + fmt(inv.taxable_total || 0)"></span>
+                  <span x-text="'CGST: ' + fmt(inv.cgst_total || 0)"></span>
+                  <span x-text="'SGST: ' + fmt(inv.sgst_total || 0)"></span>
+                </div>
+              </div>
+            </template>
+            <div x-show="gstData.length === 0" class="text-center py-8 text-gray-400 text-sm">No data for selected range</div>
+          </div>
+        </div>
+        <!-- Low Stock -->
+        <div x-show="!loading && tab === 'lowstock'">
+          <div class="space-y-2">
+            <template x-for="p in lowStockData" :key="p.id">
+              <div class="bg-white rounded-lg p-3 shadow-sm flex justify-between items-center" :class="p.current_stock < 0 ? 'border-l-4 border-red-400' : 'border-l-4 border-yellow-400'">
+                <div><div class="text-sm font-medium" x-text="p.name"></div><div class="text-xs text-gray-400" x-text="p.product_code + ' | ' + p.barcode"></div></div>
+                <div class="text-right">
+                  <div class="text-sm font-bold" :class="p.current_stock < 0 ? 'text-red-500' : 'text-yellow-500'" x-text="p.current_stock"></div>
+                  <div class="text-xs text-gray-400" x-text="'Min: ' + p.min_stock"></div>
+                </div>
+              </div>
+            </template>
+            <div x-show="lowStockData.length === 0" class="text-center py-8 text-gray-400 text-sm">All stock levels OK</div>
+          </div>
+        </div>
+      </div>
+      </template>
+
+      <!-- SETTINGS (admin) -->
+      <template x-if="page === 'settings'">
+      <div x-data="settingsPage()" x-init="init()">
+        <div x-show="loading" class="text-center py-8 text-gray-400">Loading...</div>
+        <div x-show="!loading">
+          <div class="bg-white rounded-xl p-4 shadow-sm">
+            <div class="space-y-3">
+              <template x-for="item in keys" :key="item.key">
+                <div>
+                  <label class="text-xs text-gray-500" x-text="item.label"></label>
+                  <input :type="item.key.includes('cgst') || item.key.includes('sgst') ? 'number' : 'text'"
+                    x-model="settings[item.key]" class="w-full px-3 py-2 border rounded-lg text-base mt-1">
+                </div>
+              </template>
+            </div>
+            <button @click="save()" :disabled="saving"
+              class="w-full mt-4 py-3 bg-primary text-white rounded-lg font-semibold disabled:opacity-50">
+              <span x-show="!saving">Save Settings</span>
+              <span x-show="saving">Saving...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      </template>
+
+      <!-- USERS (admin) -->
+      <template x-if="page === 'users'">
+      <div x-data="usersPage()" x-init="init()">
+        <div x-show="creating" class="fixed inset-0 bg-black/50 z-50 flex items-end justify-center" @click.self="cancelCreate()">
+          <div class="bg-white rounded-t-2xl w-full max-w-lg p-4">
+            <h3 class="font-semibold mb-3">New User</h3>
+            <div class="space-y-2">
+              <input x-model="newUser.name" placeholder="Name" class="w-full px-3 py-2 border rounded-lg text-base">
+              <input x-model="newUser.email" type="email" placeholder="Email" class="w-full px-3 py-2 border rounded-lg text-base">
+              <input x-model="newUser.password" type="password" placeholder="Password" class="w-full px-3 py-2 border rounded-lg text-base">
+              <input x-model="newUser.passwordConfirm" type="password" placeholder="Confirm Password" class="w-full px-3 py-2 border rounded-lg text-base">
+              <select x-model="newUser.role" class="w-full px-3 py-2 border rounded-lg text-base">
+                <option value="viewer">Viewer</option>
+                <option value="salesperson">Salesperson</option>
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div class="flex gap-2 mt-4">
+              <button @click="cancelCreate()" class="flex-1 py-2 border rounded-lg text-sm">Cancel</button>
+              <button @click="saveNewUser()" class="flex-1 py-2 bg-primary text-white rounded-lg text-sm">Create</button>
+            </div>
+          </div>
+        </div>
+        <template x-if="editing">
+        <div class="fixed inset-0 bg-black/50 z-50 flex items-end justify-center" @click.self="cancelEdit()">
+          <div class="bg-white rounded-t-2xl w-full max-w-lg p-4">
+            <h3 class="font-semibold mb-3">Edit Role: <span x-text="editing?.name"></span></h3>
+            <select x-model="editing.role" class="w-full px-3 py-3 border rounded-lg text-base mb-4">
+              <option value="viewer">Viewer</option>
+              <option value="salesperson">Salesperson</option>
+              <option value="manager">Manager</option>
+              <option value="admin">Admin</option>
+            </select>
+            <div class="flex gap-2">
+              <button @click="cancelEdit()" class="flex-1 py-2 border rounded-lg text-sm">Cancel</button>
+              <button @click="saveRole()" class="flex-1 py-2 bg-primary text-white rounded-lg text-sm">Save</button>
+            </div>
+          </div>
+        </div>
+        </template>
+        <div x-show="loading" class="text-center py-8 text-gray-400">Loading...</div>
+        <div x-show="!loading">
+          <button @click="startCreate()" class="w-full py-3 bg-primary text-white rounded-lg font-semibold mb-4">+ Add User</button>
+          <div class="space-y-2">
+            <template x-for="u in users" :key="u.id">
+              <div @click="editRole(u)" class="bg-white rounded-lg p-3 shadow-sm flex justify-between items-center active:bg-gray-50 cursor-pointer">
+                <div><div class="font-medium text-sm" x-text="u.name || u.email"></div><div class="text-xs text-gray-400" x-text="u.email"></div></div>
+                <span class="px-2 py-1 text-xs rounded-full font-medium" :class="roleColor(u.role)" x-text="u.role"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+      </template>
+
+    </main>
+
+    <!-- Bottom navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
+      <div class="max-w-lg mx-auto flex justify-around">
+        <button @click="goto('#dashboard')" class="flex-1 py-3 flex flex-col items-center gap-0.5"
+          :class="page === 'dashboard' ? 'text-primary' : 'text-gray-400'">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          <span class="text-[10px]">Home</span>
+        </button>
+        <button @click="goto('#invoice')" class="flex-1 py-3 flex flex-col items-center gap-0.5"
+          :class="page === 'invoice-new' ? 'text-primary' : 'text-gray-400'">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          <span class="text-[10px]">Invoice</span>
+        </button>
+        <button @click="goto('#invoices')" class="flex-1 py-3 flex flex-col items-center gap-0.5"
+          :class="page === 'invoice-list' || page === 'invoice-view' ? 'text-primary' : 'text-gray-400'">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span class="text-[10px]">History</span>
+        </button>
+        <button @click="goto('#products')" class="flex-1 py-3 flex flex-col items-center gap-0.5"
+          :class="page === 'products' ? 'text-primary' : 'text-gray-400'">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          <span class="text-[10px]">Products</span>
+        </button>
+        <button @click="goto('#more')" class="flex-1 py-3 flex flex-col items-center gap-0.5"
+          :class="['more','settings','users','customers','suppliers','stock','reports','import'].includes(page) ? 'text-primary' : 'text-gray-400'">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <span class="text-[10px]">More</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/api.js?v=63"></script>
+  <script src="/js/lib/discount.js?v=63"></script>
+  <script src="/js/lib/gst.js?v=63"></script>
+  <script src="/js/lib/qrcode-gen.js?v=63"></script>
+  <script src="/js/app.js?v=63"></script>
+  <script src="/js/pages/login.js?v=63"></script>
+  <script src="/js/pages/dashboard.js?v=63"></script>
+  <script src="/js/pages/invoice-new.js?v=63"></script>
+  <script src="/js/pages/invoice-customer.js?v=63"></script>
+  <script src="/js/pages/invoice-cart.js?v=63"></script>
+  <script src="/js/pages/invoice-payment.js?v=63"></script>
+  <script src="/js/pages/invoice-success.js?v=63"></script>
+  <script src="/js/pages/invoice-list.js?v=63"></script>
+  <script src="/js/pages/invoice-view.js?v=63"></script>
+  <script src="/js/pages/products.js?v=63"></script>
+  <script src="/js/pages/product-quick-add.js?v=63"></script>
+  <script src="/js/pages/customers.js?v=63"></script>
+  <script src="/js/pages/suppliers.js?v=63"></script>
+  <script src="/js/pages/stock.js?v=63"></script>
+  <script src="/js/pages/reports.js?v=63"></script>
+  <script src="/js/pages/settings.js?v=63"></script>
+  <script src="/js/pages/users.js?v=63"></script>
+  <script src="/js/pages/import.js?v=63"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+  <script>
+    const APP_VERSION = 63;
+    if ("serviceWorker" in navigator) {
+      // Check if we're on a stale cache and force-update
+      caches.keys().then(async (keys) => {
+        const stale = keys.find(k => k !== "invoice-v" + APP_VERSION);
+        if (stale) {
+          // Nuclear option: wipe everything and reload
+          const regs = await navigator.serviceWorker.getRegistrations();
+          for (const r of regs) await r.unregister();
+          for (const k of keys) await caches.delete(k);
+          window.location.reload();
+          return;
+        }
+      });
+      navigator.serviceWorker.register("/sw.js").then((reg) => {
+        // Check for updates every 60 seconds
+        setInterval(() => reg.update(), 60000);
+        // When a new SW activates, reload to get fresh assets
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          window.location.reload();
+        });
+      }).catch(() => {});
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+/* Custom styles */
+* { -webkit-tap-highlight-color: transparent; }
+input, select, textarea { font-size: 16px !important; /* prevent iOS zoom */ }
+body { touch-action: manipulation; }
+
+/* Smooth page transitions */
+[x-show] { transition: opacity 0.15s ease; }
+
+/* Stock badges */
+.stock-ok { color: #10B981; }
+.stock-low { color: #F59E0B; }
+.stock-negative { color: #EF4444; }
+.stock-critical { color: #EF4444; font-weight: bold; }
+
+/* Cart item swipe hint */
+.cart-item { position: relative; overflow: hidden; }
+
+/* Safe area for notched phones */
+.pb-20 { padding-bottom: max(5rem, env(safe-area-inset-bottom, 0px) + 4rem); }
+nav.fixed.bottom-0 { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* Price placeholder styling — lighter so it's clearly "not typed" */
+input::placeholder { color: #9ca3af; }
+
+/* Hide number input spinners (useless on touch) */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
+
+/* Prevent text selection on buttons */
+button { user-select: none; -webkit-user-select: none; }
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+
+/* Print-only elements hidden on screen */
+.print-only { display: none !important; }
+
+/* Invoice document on screen */
+.invoice-doc table { border-collapse: collapse; }
+.invoice-doc table th,
+.invoice-doc table td { padding: 4px 2px; }
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  /* Hide non-print elements */
+  nav, header, .no-print,
+  input, select, [x-show="loading"],
+  .fixed { display: none !important; }
+
+  /* Reset layout */
+  body {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 11pt !important;
+    color: black !important;
+  }
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .pb-20 { padding-bottom: 0 !important; }
+
+  /* Show print-only elements */
+  .print-only { display: block !important; }
+
+  /* Card styles for print */
+  .bg-white { box-shadow: none !important; background: white !important; }
+  .rounded-xl, .rounded-lg { border-radius: 0 !important; }
+  .shadow-sm { box-shadow: none !important; }
+
+  /* Invoice doc print */
+  .invoice-doc {
+    border: 1pt solid #333 !important;
+    border-radius: 0 !important;
+    font-size: 11pt !important;
+    max-width: 100% !important;
+  }
+  .invoice-doc * {
+    color: black !important;
+  }
+  .invoice-doc .text-gray-400,
+  .invoice-doc .text-gray-500 { color: #444 !important; }
+  .invoice-doc .text-red-500 { color: #c00 !important; }
+
+  /* Invoice table */
+  .invoice-doc table { width: 100% !important; }
+  .invoice-doc table th { font-size: 10pt !important; }
+  .invoice-doc table td { font-size: 10pt !important; }
+  .invoice-doc table thead tr { border-bottom: 1pt solid #333 !important; }
+  .invoice-doc table tbody tr { border-bottom: 0.5pt solid #ccc !important; }
+
+  /* Borders */
+  .invoice-doc .border-b { border-bottom: 0.5pt solid #999 !important; }
+  .invoice-doc .border-t { border-top: 0.5pt solid #999 !important; }
+
+  /* Grand total border */
+  .invoice-doc .border-t.pt-2 { border-top: 1.5pt solid #333 !important; }
+
+  /* Page setup */
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+}
