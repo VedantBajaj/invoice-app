@@ -161,11 +161,17 @@ function productsPage() {
 
       // Search for the scanned barcode and open detail if found
       try {
-        const product = await api.getProductByBarcode(code);
+        // Try exact match first, then search (barcode field may store short codes)
+        let product = await api.getProductByBarcode(code);
+        if (!product) {
+          const results = await api.searchProducts(code, 1, 5);
+          if (results.items.length === 1) {
+            product = results.items[0];
+          }
+        }
         if (product) {
           this.openDetail(product);
         } else {
-          // Not found — put barcode in search bar so user sees it
           this.searchQuery = code;
           await this.search();
         }
