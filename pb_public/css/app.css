@@ -42,10 +42,10 @@ button { user-select: none; -webkit-user-select: none; }
 .invoice-doc table th,
 .invoice-doc table td { padding: 4px 2px; }
 
-/* Barcode scanner */
-#barcode-scanner { border-radius: 12px; overflow: hidden; }
-#barcode-scanner video { object-fit: cover; border-radius: 12px; }
-#barcode-scanner #qr-shaded-region { border-color: rgba(79, 70, 229, 0.5) !important; }
+/* Barcode scanner (Quagga2) */
+#barcode-scanner { border-radius: 12px; overflow: hidden; position: relative; }
+#barcode-scanner video { width: 100% !important; height: 100% !important; object-fit: cover; border-radius: 12px; }
+#barcode-scanner canvas.drawingBuffer { display: none; } /* hide debug overlay */
 
 /* ===== PRINT STYLES ===== */
 @media print {

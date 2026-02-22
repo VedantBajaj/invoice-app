@@ -13,6 +13,7 @@ function invoiceNewPage() {
     _scanner: null,
     _scanProcessing: false,
     _navCleanup: null,
+    _scanBuffer: [],  // collect recent reads for confidence filtering
     // Quick-add product
     showQuickAdd: false,
     quickAddBarcode: "",
@@ -87,48 +88,90 @@ function invoiceNewPage() {
       }
     },
 
-    // ===== BARCODE SCANNER =====
+    // ===== BARCODE SCANNER (Quagga2) =====
     async openScanner() {
-      this.showScanner = true;
       this.scanError = "";
 
-      await this.$nextTick();
-
+      // Request camera permission FIRST (preserves iOS user-gesture chain)
+      let stream;
       try {
-        this._scanner = new Html5Qrcode("barcode-scanner");
-        await this._scanner.start(
-          { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 120 },
-            aspectRatio: 1.7,
-            formatsToSupport: [
-              Html5QrcodeSupportedFormats.EAN_13,
-              Html5QrcodeSupportedFormats.EAN_8,
-              Html5QrcodeSupportedFormats.CODE_128,
-              Html5QrcodeSupportedFormats.CODE_39,
-              Html5QrcodeSupportedFormats.UPC_A,
-              Html5QrcodeSupportedFormats.UPC_E,
-              Html5QrcodeSupportedFormats.ITF,
-              Html5QrcodeSupportedFormats.QR_CODE,
-            ],
-          },
-          (decodedText) => this.onBarcodeScanned(decodedText),
-          () => {} // silence per-frame misses
-        );
-        // Cleanup if user navigates away
-        this._navCleanup = () => this.closeScanner();
-        window.addEventListener("hashchange", this._navCleanup, { once: true });
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+        });
       } catch (err) {
-        console.error("Scanner start error:", err);
+        console.error("Camera permission error:", err);
         const msg = String(err);
         if (msg.includes("NotAllowedError") || msg.includes("Permission")) {
           this.scanError = "Camera permission denied. Check browser settings.";
         } else if (msg.includes("NotFoundError")) {
           this.scanError = "No camera found on this device.";
         } else {
-          this.scanError = "Could not start camera. Try again.";
+          this.scanError = "Could not access camera. Try again.";
         }
+        this.showScanner = true;
+        return;
+      }
+      // Stop pre-request stream — Quagga will open its own
+      stream.getTracks().forEach((t) => t.stop());
+
+      // Show the scanner div
+      this.showScanner = true;
+      await this.$nextTick();
+
+      try {
+        await new Promise((resolve, reject) => {
+          Quagga.init({
+            inputStream: {
+              name: "Live",
+              type: "LiveStream",
+              target: document.getElementById("barcode-scanner"),
+              constraints: {
+                facingMode: "environment",
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+              },
+            },
+            decoder: {
+              readers: [
+                "ean_reader",
+                "ean_8_reader",
+                "code_128_reader",
+                "code_39_reader",
+                "upc_reader",
+                "upc_e_reader",
+                "i2of5_reader",
+              ],
+              multiple: false,
+            },
+            locate: true,
+            frequency: 10,
+          }, (err) => {
+            if (err) { reject(err); return; }
+            Quagga.start();
+            resolve();
+          });
+        });
+
+        this._scanner = true; // flag that scanner is active
+        this._scanBuffer = [];
+        Quagga.onDetected((result) => {
+          const code = result.codeResult.code;
+          if (!code || this._scanProcessing) return;
+          // Collect reads and accept when same code appears 3+ times
+          this._scanBuffer.push(code);
+          if (this._scanBuffer.length > 10) this._scanBuffer.shift();
+          const count = this._scanBuffer.filter(c => c === code).length;
+          if (count >= 3) {
+            this.onBarcodeScanned(code);
+          }
+        });
+
+        // Cleanup if user navigates away
+        this._navCleanup = () => this.closeScanner();
+        window.addEventListener("hashchange", this._navCleanup, { once: true });
+      } catch (err) {
+        console.error("Scanner start error:", err);
+        this.scanError = "Scanner error: " + (err.message || err);
       }
     },
 
@@ -139,21 +182,19 @@ function invoiceNewPage() {
       }
       if (this._scanner) {
         try {
-          const state = this._scanner.getState();
-          if (state === 2 || state === 3) { // SCANNING or PAUSED
-            await this._scanner.stop();
-          }
+          Quagga.offDetected();
+          Quagga.stop();
         } catch (e) { console.warn("Scanner stop:", e); }
-        try { this._scanner.clear(); } catch (e) {}
         this._scanner = null;
       }
       this.showScanner = false;
       this.scanError = "";
       this._scanProcessing = false;
+      this._scanBuffer = [];
     },
 
     onBarcodeScanned(code) {
-      if (this._scanProcessing) return;
+      if (this._scanProcessing || !code) return;
       this._scanProcessing = true;
       if (navigator.vibrate) navigator.vibrate(100);
       this.closeScanner();
