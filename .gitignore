@@ -22,4 +22,5 @@ Thumbs.db
 
 # Private integration docs
 docs/raintek-*
+docs/integration-plan.md
 docs/private/
