@@ -35,6 +35,7 @@ A mobile-first POS and inventory management PWA — GST-compliant billing, produ
 |-------|-----------|
 | **Backend** | [PocketBase](https://pocketbase.io) (Go) — embedded SQLite, REST API, auth, hooks |
 | **Frontend** | [Alpine.js](https://alpinejs.dev) + [Tailwind CSS](https://tailwindcss.com) — reactive UI, no build step |
+| **Barcode** | [Quagga2](https://github.com/ericblade/quagga2) — camera barcode scanning (EAN, UPC, Code-128, Code-39) |
 | **PWA** | Service worker + manifest — installable on mobile, offline capable |
 
 **Zero build tools.** No Node.js required for the frontend — just static HTML/JS/CSS served by PocketBase.

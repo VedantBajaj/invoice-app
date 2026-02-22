@@ -1,4 +1,4 @@
-const CACHE_NAME = "invoice-v70";
+const CACHE_NAME = "invoice-v74";
 const SHELL_ASSETS = [
   "/",
   "/css/app.css",
@@ -7,6 +7,7 @@ const SHELL_ASSETS = [
   "/js/lib/discount.js",
   "/js/lib/gst.js",
   "/js/lib/qrcode-gen.js",
+  "/js/lib/quagga.min.js",
   "/js/pages/login.js",
   "/js/pages/dashboard.js",
   "/js/pages/invoice-new.js",

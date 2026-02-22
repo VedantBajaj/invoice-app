@@ -144,7 +144,7 @@ function invoiceNewPage() {
               multiple: false,
             },
             locate: true,
-            frequency: 10,
+            frequency: 15,
           }, (err) => {
             if (err) { reject(err); return; }
             Quagga.start();
@@ -157,11 +157,11 @@ function invoiceNewPage() {
         Quagga.onDetected((result) => {
           const code = result.codeResult.code;
           if (!code || this._scanProcessing) return;
-          // Collect reads and accept when same code appears 3+ times
+          // Accept when same code appears 2+ times (fast confirmation)
           this._scanBuffer.push(code);
-          if (this._scanBuffer.length > 10) this._scanBuffer.shift();
+          if (this._scanBuffer.length > 8) this._scanBuffer.shift();
           const count = this._scanBuffer.filter(c => c === code).length;
-          if (count >= 3) {
+          if (count >= 2) {
             this.onBarcodeScanned(code);
           }
         });
