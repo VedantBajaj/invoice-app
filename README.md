@@ -3,7 +3,10 @@
 A mobile-first POS and inventory management PWA — GST-compliant billing, product catalog, and stock tracking built for Indian retail shops.
 
 <p align="center">
-  <img src="docs/screenshots/dashboard.png" width="280" alt="Dashboard" />
+  <img src="docs/screenshots/dashboard.png" width="220" alt="Dashboard" />
+  <img src="docs/screenshots/new-invoice.png" width="220" alt="New Invoice" />
+  <img src="docs/screenshots/invoice-view.png" width="220" alt="Invoice View" />
+  <img src="docs/screenshots/products.png" width="220" alt="Products" />
 </p>
 
 ## Features
