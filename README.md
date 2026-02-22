@@ -18,7 +18,7 @@ A mobile-first POS and inventory management PWA — GST-compliant billing, produ
 
 ## Features
 
-- **Quick Billing** — barcode lookup or search products by name/code, bulk-add items with "Add Sarees" quick bill
+- **Quick Billing** — camera barcode scanner, manual barcode lookup, search by name/code, bulk-add with "Add Sarees"
 - **GST Calculations** — automatic CGST/SGST/IGST split with inclusive pricing, HSN codes
 - **Multiple Payment Methods** — Cash, UPI (with QR code), Card, Credit
 - **Invoice Sharing** — WhatsApp text share, print-ready view, image export
