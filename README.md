@@ -9,6 +9,12 @@ A mobile-first POS and inventory management PWA — GST-compliant billing, produ
   <img src="docs/screenshots/products.png" width="220" alt="Products" />
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/whatsapp-share.jpg" width="280" alt="WhatsApp Invoice Share" />
+  <br />
+  <em>Invoice shared via WhatsApp</em>
+</p>
+
 ## Features
 
 - **Quick Billing** — scan barcodes or search products by name/code, bulk-add items with "Add Sarees" quick bill
