@@ -521,7 +521,7 @@
             <div @click="openDetail(p)" class="bg-white rounded-lg p-3 shadow-sm flex justify-between items-center active:bg-gray-50 cursor-pointer">
               <div>
                 <div class="font-medium text-sm" x-text="p.name"></div>
-                <div class="text-xs text-gray-400" x-text="p.product_code + ' | BC: ' + (p.barcode || '-')"></div>
+                <div class="text-xs text-gray-400" x-text="p.product_code + ' | BC: ' + (p.barcode || '-') + (p.batch ? ' | ' + p.batch : '')"></div>
               </div>
               <div class="text-right">
                 <div class="text-sm font-semibold" x-text="'₹' + p.retail_price"></div>
