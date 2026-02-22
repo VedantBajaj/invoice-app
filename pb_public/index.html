@@ -23,6 +23,7 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/dist/html5-qrcode.min.js"></script>
   <link rel="stylesheet" href="/css/app.css">
 </head>
 <body class="bg-gray-50 min-h-screen" x-data="appRoot()" x-init="init()" @toast.window="toast($event.detail.msg, $event.detail.type)">
@@ -198,7 +199,18 @@
               <input x-model="barcodeInput" @keyup.enter="lookupBarcode()"
                 inputmode="numeric" pattern="[0-9]*" placeholder="Barcode (4-5 digits)"
                 class="flex-1 px-3 py-3 border rounded-lg text-base">
+              <button @click="openScanner()" class="px-3 py-3 bg-gray-100 text-gray-600 rounded-lg active:bg-gray-200" title="Scan barcode" aria-label="Scan barcode with camera">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9V6a3 3 0 013-3h3M21 9V6a3 3 0 00-3-3h-3M3 15v3a3 3 0 003 3h3M21 15v3a3 3 0 01-3 3h-3M7 12h10"/></svg>
+              </button>
               <button @click="lookupBarcode()" class="px-4 py-3 bg-primary text-white rounded-lg text-sm font-medium">Add</button>
+            </div>
+            <!-- Inline barcode scanner -->
+            <div x-show="showScanner" class="mb-3 rounded-xl overflow-hidden bg-black relative" style="height: 220px;">
+              <div id="barcode-scanner" class="w-full h-full"></div>
+              <button @click="closeScanner()" class="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1.5 z-10">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+              <div x-show="scanError" class="absolute bottom-2 left-2 right-2 px-3 py-1.5 bg-red-500/80 text-white text-xs rounded-lg text-center" x-text="scanError"></div>
             </div>
             <!-- Search -->
             <input x-model="searchQuery" @input="searchProduct()"
@@ -1262,32 +1274,32 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/js/api.js?v=63"></script>
-  <script src="/js/lib/discount.js?v=63"></script>
-  <script src="/js/lib/gst.js?v=63"></script>
-  <script src="/js/lib/qrcode-gen.js?v=63"></script>
-  <script src="/js/app.js?v=63"></script>
-  <script src="/js/pages/login.js?v=63"></script>
-  <script src="/js/pages/dashboard.js?v=63"></script>
-  <script src="/js/pages/invoice-new.js?v=63"></script>
-  <script src="/js/pages/invoice-customer.js?v=63"></script>
-  <script src="/js/pages/invoice-cart.js?v=63"></script>
-  <script src="/js/pages/invoice-payment.js?v=63"></script>
-  <script src="/js/pages/invoice-success.js?v=63"></script>
-  <script src="/js/pages/invoice-list.js?v=63"></script>
-  <script src="/js/pages/invoice-view.js?v=63"></script>
-  <script src="/js/pages/products.js?v=63"></script>
-  <script src="/js/pages/product-quick-add.js?v=63"></script>
-  <script src="/js/pages/customers.js?v=63"></script>
-  <script src="/js/pages/suppliers.js?v=63"></script>
-  <script src="/js/pages/stock.js?v=63"></script>
-  <script src="/js/pages/reports.js?v=63"></script>
-  <script src="/js/pages/settings.js?v=63"></script>
-  <script src="/js/pages/users.js?v=63"></script>
-  <script src="/js/pages/import.js?v=63"></script>
+  <script src="/js/api.js?v=64"></script>
+  <script src="/js/lib/discount.js?v=64"></script>
+  <script src="/js/lib/gst.js?v=64"></script>
+  <script src="/js/lib/qrcode-gen.js?v=64"></script>
+  <script src="/js/app.js?v=64"></script>
+  <script src="/js/pages/login.js?v=64"></script>
+  <script src="/js/pages/dashboard.js?v=64"></script>
+  <script src="/js/pages/invoice-new.js?v=64"></script>
+  <script src="/js/pages/invoice-customer.js?v=64"></script>
+  <script src="/js/pages/invoice-cart.js?v=64"></script>
+  <script src="/js/pages/invoice-payment.js?v=64"></script>
+  <script src="/js/pages/invoice-success.js?v=64"></script>
+  <script src="/js/pages/invoice-list.js?v=64"></script>
+  <script src="/js/pages/invoice-view.js?v=64"></script>
+  <script src="/js/pages/products.js?v=64"></script>
+  <script src="/js/pages/product-quick-add.js?v=64"></script>
+  <script src="/js/pages/customers.js?v=64"></script>
+  <script src="/js/pages/suppliers.js?v=64"></script>
+  <script src="/js/pages/stock.js?v=64"></script>
+  <script src="/js/pages/reports.js?v=64"></script>
+  <script src="/js/pages/settings.js?v=64"></script>
+  <script src="/js/pages/users.js?v=64"></script>
+  <script src="/js/pages/import.js?v=64"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
   <script>
-    const APP_VERSION = 63;
+    const APP_VERSION = 64;
     if ("serviceWorker" in navigator) {
       // Check if we're on a stale cache and force-update
       caches.keys().then(async (keys) => {

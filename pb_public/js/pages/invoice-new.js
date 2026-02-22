@@ -7,6 +7,12 @@ function invoiceNewPage() {
     successInvoice: null,
     customerSearching: false,
     submitting: false,
+    // Barcode scanner
+    showScanner: false,
+    scanError: "",
+    _scanner: null,
+    _scanProcessing: false,
+    _navCleanup: null,
     // Quick-add product
     showQuickAdd: false,
     quickAddBarcode: "",
@@ -79,6 +85,80 @@ function invoiceNewPage() {
         this.showQuickAdd = true;
         this.barcodeInput = "";
       }
+    },
+
+    // ===== BARCODE SCANNER =====
+    async openScanner() {
+      this.showScanner = true;
+      this.scanError = "";
+
+      await this.$nextTick();
+
+      try {
+        this._scanner = new Html5Qrcode("barcode-scanner");
+        await this._scanner.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 120 },
+            aspectRatio: 1.7,
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.CODE_128,
+              Html5QrcodeSupportedFormats.CODE_39,
+              Html5QrcodeSupportedFormats.UPC_A,
+              Html5QrcodeSupportedFormats.UPC_E,
+              Html5QrcodeSupportedFormats.ITF,
+              Html5QrcodeSupportedFormats.QR_CODE,
+            ],
+          },
+          (decodedText) => this.onBarcodeScanned(decodedText),
+          () => {} // silence per-frame misses
+        );
+        // Cleanup if user navigates away
+        this._navCleanup = () => this.closeScanner();
+        window.addEventListener("hashchange", this._navCleanup, { once: true });
+      } catch (err) {
+        console.error("Scanner start error:", err);
+        const msg = String(err);
+        if (msg.includes("NotAllowedError") || msg.includes("Permission")) {
+          this.scanError = "Camera permission denied. Check browser settings.";
+        } else if (msg.includes("NotFoundError")) {
+          this.scanError = "No camera found on this device.";
+        } else {
+          this.scanError = "Could not start camera. Try again.";
+        }
+      }
+    },
+
+    async closeScanner() {
+      if (this._navCleanup) {
+        window.removeEventListener("hashchange", this._navCleanup);
+        this._navCleanup = null;
+      }
+      if (this._scanner) {
+        try {
+          const state = this._scanner.getState();
+          if (state === 2 || state === 3) { // SCANNING or PAUSED
+            await this._scanner.stop();
+          }
+        } catch (e) { console.warn("Scanner stop:", e); }
+        try { this._scanner.clear(); } catch (e) {}
+        this._scanner = null;
+      }
+      this.showScanner = false;
+      this.scanError = "";
+      this._scanProcessing = false;
+    },
+
+    onBarcodeScanned(code) {
+      if (this._scanProcessing) return;
+      this._scanProcessing = true;
+      if (navigator.vibrate) navigator.vibrate(100);
+      this.closeScanner();
+      this.barcodeInput = code;
+      this.lookupBarcode();
     },
 
     async quickAddProduct() {
