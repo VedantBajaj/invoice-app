@@ -3,14 +3,15 @@
 A mobile-first POS and inventory management PWA — GST-compliant billing, product catalog, and stock tracking built for Indian retail shops.
 
 <p align="center">
-  <img src="docs/screenshots/dashboard.png" width="220" alt="Dashboard" />
-  <img src="docs/screenshots/new-invoice.png" width="220" alt="New Invoice" />
-  <img src="docs/screenshots/invoice-view.png" width="220" alt="Invoice View" />
-  <img src="docs/screenshots/products.png" width="220" alt="Products" />
+  <img src="docs/screenshots/dashboard.png" width="180" alt="Dashboard" />
+  <img src="docs/screenshots/new-invoice.png" width="180" alt="New Invoice" />
+  <img src="docs/screenshots/invoice-view.png" width="180" alt="Invoice View" />
+  <img src="docs/screenshots/products.png" width="180" alt="Products" />
+  <img src="docs/screenshots/more.png" width="180" alt="More" />
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/whatsapp-share.jpg" width="280" alt="WhatsApp Invoice Share" />
+  <img src="docs/screenshots/whatsapp-share.jpg" width="250" alt="WhatsApp Invoice Share" />
   <br />
   <em>Invoice shared via WhatsApp</em>
 </p>
