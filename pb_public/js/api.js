@@ -27,6 +27,19 @@ const api = {
   isLoggedIn() {
     return pb.authStore.isValid;
   },
+  // Try to refresh an expired token silently; returns true if session is valid
+  async tryRefreshAuth() {
+    if (pb.authStore.isValid) return true;
+    if (!pb.authStore.token) return false;
+    // Token exists but expired — try refreshing
+    try {
+      await pb.collection("users").authRefresh();
+      return pb.authStore.isValid;
+    } catch {
+      pb.authStore.clear();
+      return false;
+    }
+  },
   getUser() {
     return pb.authStore.record;
   },

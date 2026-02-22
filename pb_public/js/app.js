@@ -273,9 +273,10 @@ function appRoot() {
     toastMsg: "",
     toastType: "success",
 
-    init() {
-      // Check auth on init
-      if (api.isLoggedIn()) {
+    async init() {
+      // Try to restore/refresh auth on init
+      const loggedIn = await api.tryRefreshAuth();
+      if (loggedIn) {
         Alpine.store("auth").init();
         Alpine.store("settings").load();
       }
