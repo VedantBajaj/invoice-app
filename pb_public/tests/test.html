@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice App — Browser Tests</title>
+  <style>
+    body { font-family: 'SF Mono', Monaco, Consolas, monospace; font-size: 13px; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+    .pass { color: #00e676; }
+    .fail { color: #ff5252; }
+    .skip { color: #ffd740; }
+    .suite { color: #448aff; font-weight: bold; margin-top: 16px; }
+    .summary { margin-top: 24px; padding: 16px; border-radius: 8px; font-size: 16px; }
+    .summary.pass-bg { background: #1b5e20; }
+    .summary.fail-bg { background: #b71c1c; }
+    .error-detail { color: #ff8a80; margin-left: 24px; font-size: 11px; }
+    #progress { color: #9e9e9e; }
+  </style>
+</head>
+<body>
+  <h2>Invoice App — Browser Tests</h2>
+  <div id="progress">Initializing...</div>
+  <div id="output"></div>
+  <div id="summary"></div>
+
+  <!-- Load app dependencies (same CDN as index.html) -->
+  <script src="https://cdn.jsdelivr.net/gh/pocketbase/js-sdk@master/dist/pocketbase.umd.js"></script>
+  <script src="/js/lib/gst.js"></script>
+  <script src="/js/lib/discount.js"></script>
+  <script src="/js/api.js"></script>
+  <!-- Note: Do NOT load Alpine.js or app.js here. We test API + utilities directly. -->
+
+  <!-- Test files -->
+  <script src="/tests/test.js"></script>
+  <script src="/tests/functional-tests.js"></script>
+</body>
+</html>

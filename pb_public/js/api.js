@@ -202,7 +202,7 @@ const api = {
   async getStockMovements(filter = "", page = 1, perPage = 50) {
     return pb.collection("stock_movements").getList(page, perPage, {
       filter,
-      sort: "-created",
+      sort: "-id",
       expand: "product",
       requestKey: null,
     });
