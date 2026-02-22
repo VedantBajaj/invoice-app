@@ -1,5 +1,5 @@
 /**
- * Invoice App — 80 backend API tests.
+ * Invoice App — 85 backend API tests.
  * Run: node tests/api-tests.mjs
  *
  * Requires PocketBase running at PB_URL (default http://localhost:8090).
@@ -256,7 +256,7 @@ async function main() {
             "POST",
             "/api/collections/products/records",
             {
-              product_code: "TST-NEW-1",
+              product_code: `TST-NEW-1-${Date.now()}`,
               name: "Test New Product Admin",
               retail_price: 500,
               mrp: 500,
@@ -277,7 +277,7 @@ async function main() {
             "POST",
             "/api/collections/products/records",
             {
-              product_code: "TST-NEW-2",
+              product_code: `TST-NEW-2-${Date.now()}`,
               name: "Test New Product Sales",
               retail_price: 300,
               mrp: 300,
@@ -389,13 +389,15 @@ async function main() {
       {
         name: "required-fields",
         fn: async () => {
+          // product_code is required — name is auto-filled by hook
           await assertThrows(async () => {
             await apiCall(
               "POST",
               "/api/collections/products/records",
               {
-                product_code: "TST-NOFLD",
-                // missing name, retail_price, mrp
+                name: "__auto__",
+                // missing product_code
+                retail_price: 100,
               },
               userTokens.admin
             );
@@ -465,7 +467,7 @@ async function main() {
           const data = await apiCall(
             "POST",
             "/api/collections/customers/records",
-            { name: "Viewer Customer", mobile: "9876599999", state: "Delhi" },
+            { name: "Viewer Customer", mobile: `98765${String(Date.now()).slice(-5)}`, state: "Delhi" },
             userTokens.viewer
           );
           assert(data.id, "viewer should be able to create a customer");
@@ -504,11 +506,12 @@ async function main() {
       {
         name: "delete-as-admin",
         fn: async () => {
-          // Create a temporary customer to delete
+          // Create a temporary customer to delete (use timestamp for unique mobile)
+          const uniqueMobile = "98765" + String(Date.now()).slice(-5);
           const temp = await apiCall(
             "POST",
             "/api/collections/customers/records",
-            { name: "Temp Delete Customer", mobile: "9876500099", state: "UP" },
+            { name: "Temp Delete Customer", mobile: uniqueMobile, state: "UP" },
             userTokens.admin
           );
           deletedCustomerId = temp.id;
@@ -524,7 +527,7 @@ async function main() {
           const recreated = await apiCall(
             "POST",
             "/api/collections/customers/records",
-            { name: "Temp Delete Customer", mobile: "9876500099", state: "UP" },
+            { name: "Temp Delete Customer", mobile: uniqueMobile, state: "UP" },
             userTokens.admin
           );
           seed.createdDuringTests.push({ collection: "customers", id: recreated.id });
@@ -1808,6 +1811,83 @@ async function main() {
               userTokens.salesperson
             );
           }, 400);
+        },
+      },
+    ])
+  );
+
+  // --------------------------------------------------------
+  // 3.11 Product Auto-Naming Hook
+  // --------------------------------------------------------
+  tally(
+    await runSuite("Product Auto-Naming Hook", [
+      {
+        name: "auto-name-first-product",
+        fn: async () => {
+          const ts = Date.now();
+          const rec = await apiCall("POST", "/api/collections/products/records", {
+            name: "__auto__",
+            product_code: `TST-AUTONM-1-${ts}`,
+            retail_price: 100,
+          }, userTokens.admin);
+          seed.createdDuringTests.push({ collection: "products", id: rec.id });
+          assert(rec.name.startsWith("Saree-np-"), `Expected Saree-np-N, got: ${rec.name}`);
+        },
+      },
+      {
+        name: "auto-name-increments",
+        fn: async () => {
+          const ts = Date.now();
+          const rec = await apiCall("POST", "/api/collections/products/records", {
+            name: "__auto__",
+            product_code: `TST-AUTONM-2-${ts}`,
+            retail_price: 200,
+          }, userTokens.admin);
+          seed.createdDuringTests.push({ collection: "products", id: rec.id });
+          // Should be a higher index than the first one
+          const idx = parseInt(rec.name.split("-")[2]);
+          assert(idx >= 2, `Expected index >= 2, got: ${idx}`);
+        },
+      },
+      {
+        name: "explicit-name-preserved",
+        fn: async () => {
+          const ts = Date.now();
+          const rec = await apiCall("POST", "/api/collections/products/records", {
+            name: "My Custom Product",
+            product_code: `TST-AUTONM-3-${ts}`,
+            retail_price: 300,
+          }, userTokens.admin);
+          seed.createdDuringTests.push({ collection: "products", id: rec.id });
+          assert(rec.name === "My Custom Product", `Expected explicit name, got: ${rec.name}`);
+        },
+      },
+      {
+        name: "auto-name-with-purchase-price",
+        fn: async () => {
+          const ts = Date.now();
+          const rec = await apiCall("POST", "/api/collections/products/records", {
+            name: "__auto__",
+            product_code: `TST-AUTONM-4-${ts}`,
+            retail_price: 500,
+            purchase_price: 350,
+          }, userTokens.admin);
+          seed.createdDuringTests.push({ collection: "products", id: rec.id });
+          assert(rec.name.startsWith("Saree-np-"), `Expected Saree-np-N, got: ${rec.name}`);
+          assert(rec.purchase_price === 350, `Expected purchase_price=350, got: ${rec.purchase_price}`);
+        },
+      },
+      {
+        name: "purchase-price-defaults-to-zero",
+        fn: async () => {
+          const ts = Date.now();
+          const rec = await apiCall("POST", "/api/collections/products/records", {
+            name: "Test No PP",
+            product_code: `TST-AUTONM-5-${ts}`,
+            retail_price: 400,
+          }, userTokens.admin);
+          seed.createdDuringTests.push({ collection: "products", id: rec.id });
+          assert(rec.purchase_price === 0, `Expected purchase_price=0, got: ${rec.purchase_price}`);
         },
       },
     ])

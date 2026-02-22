@@ -1,4 +1,4 @@
-const CACHE_NAME = "invoice-v74";
+const CACHE_NAME = "invoice-v78";
 const SHELL_ASSETS = [
   "/",
   "/css/app.css",

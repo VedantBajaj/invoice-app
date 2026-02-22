@@ -74,3 +74,29 @@ onRecordAfterCreateSuccess((e) => {
     e.app.save(movement);
   }
 }, "invoice_items");
+
+// Hook: Auto-generate product name when blank
+// Format: "Saree-np-1", "Saree-np-2", etc.
+onRecordCreateRequest((e) => {
+  const name = (e.record.get("name") || "").trim();
+  if (!name || name === "__auto__") {
+    // Find max existing Saree-np-N index
+    let maxIndex = 0;
+    try {
+      const col = e.app.findCollectionByNameOrId("products");
+      const rows = e.app.findRecordsByFilter(col, 'name ~ "Saree-np-"', "-name", 500, 0);
+      for (let i = 0; i < rows.length; i++) {
+        const n = rows[i].get("name");
+        const parts = n.split("-");
+        if (parts.length === 3 && parts[0] === "Saree" && parts[1] === "np") {
+          const idx = parseInt(parts[2]);
+          if (idx > maxIndex) maxIndex = idx;
+        }
+      }
+    } catch (err) {
+      // no existing records
+    }
+    e.record.set("name", "Saree-np-" + (maxIndex + 1));
+  }
+  return e.next();
+}, "products");

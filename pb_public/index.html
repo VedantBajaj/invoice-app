@@ -387,20 +387,30 @@
         <div class="flex gap-2 mb-4 sticky top-14 bg-gray-50 z-10 py-1">
           <input x-model="searchQuery" @input="search()" placeholder="Search products..."
             class="flex-1 px-4 py-3 border rounded-lg text-base bg-white">
+          <button @click="openScanner()" class="px-3 py-3 bg-gray-100 text-gray-600 rounded-lg active:bg-gray-200" title="Scan barcode" aria-label="Scan barcode with camera">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9V6a3 3 0 013-3h3M21 9V6a3 3 0 00-3-3h-3M3 15v3a3 3 0 003 3h3M21 15v3a3 3 0 01-3 3h-3M7 12h10"/></svg>
+          </button>
           <button @click="showAddForm = !showAddForm" class="px-4 py-3 bg-primary text-white rounded-lg text-sm font-semibold whitespace-nowrap"
             x-text="showAddForm ? 'Cancel' : '+ Add'"></button>
+        </div>
+        <!-- Inline barcode scanner -->
+        <div x-show="showScanner" class="mb-3 rounded-xl overflow-hidden bg-black relative" style="height: 220px;">
+          <div id="products-barcode-scanner" class="w-full h-full"></div>
+          <button @click="closeScanner()" class="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1.5 z-10">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+          <div x-show="scanError" class="absolute bottom-2 left-2 right-2 px-3 py-1.5 bg-red-500/80 text-white text-xs rounded-lg text-center" x-text="scanError"></div>
         </div>
 
         <!-- Add product form -->
         <div x-show="showAddForm" class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
           <div class="text-sm font-semibold text-yellow-800 mb-3">Add New Product</div>
           <div class="space-y-2">
-            <input x-model="addName" placeholder="Product name *" class="w-full px-3 py-2 border rounded-lg text-sm">
-            <div class="flex gap-2">
-              <input x-model="addBarcode" inputmode="numeric" placeholder="Barcode" class="flex-1 px-3 py-2 border rounded-lg text-sm">
-              <input x-model="addPrice" type="number" inputmode="decimal" placeholder="Retail price *" class="flex-1 px-3 py-2 border rounded-lg text-sm">
-            </div>
-            <button @click="addProduct()" :disabled="!addName || !addPrice || addSaving"
+            <input x-model="addName" placeholder="Product name" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <input x-model="addBarcode" inputmode="numeric" placeholder="Barcode" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <input x-model="addPrice" type="number" inputmode="decimal" placeholder="Sale price *" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <input x-model="addPurchasePrice" type="number" inputmode="decimal" placeholder="Purchase price" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <button @click="addProduct()" :disabled="!addPrice || addSaving"
               class="w-full py-2 bg-yellow-500 text-white rounded-lg text-sm font-semibold disabled:opacity-50">
               <span x-show="!addSaving">Add Product</span>
               <span x-show="addSaving">Creating...</span>

@@ -43,9 +43,9 @@ button { user-select: none; -webkit-user-select: none; }
 .invoice-doc table td { padding: 4px 2px; }
 
 /* Barcode scanner (Quagga2) */
-#barcode-scanner { border-radius: 12px; overflow: hidden; position: relative; }
-#barcode-scanner video { width: 100% !important; height: 100% !important; object-fit: cover; border-radius: 12px; }
-#barcode-scanner canvas.drawingBuffer { display: none; } /* hide debug overlay */
+#barcode-scanner, #products-barcode-scanner { border-radius: 12px; overflow: hidden; position: relative; }
+#barcode-scanner video, #products-barcode-scanner video { width: 100% !important; height: 100% !important; object-fit: cover; border-radius: 12px; }
+#barcode-scanner canvas.drawingBuffer, #products-barcode-scanner canvas.drawingBuffer { display: none; } /* hide debug overlay */
 
 /* ===== PRINT STYLES ===== */
 @media print {

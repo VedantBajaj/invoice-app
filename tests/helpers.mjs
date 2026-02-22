@@ -95,17 +95,25 @@ async function seedTestData(superToken) {
   const customerIds = [];
   let supplierId = null;
 
-  // --- Users ---
+  // --- Users (idempotent: skip if already exists) ---
   for (const [role, user] of Object.entries(TEST_USERS)) {
-    const record = await apiCall("POST", "/api/collections/users/records", {
-      email: user.email,
-      password: user.password,
-      passwordConfirm: user.password,
-      name: user.name,
-      role: user.role,
-      verified: true,
-    }, superToken);
-    userIds[role] = record.id;
+    try {
+      const record = await apiCall("POST", "/api/collections/users/records", {
+        email: user.email,
+        password: user.password,
+        passwordConfirm: user.password,
+        name: user.name,
+        role: user.role,
+        verified: true,
+      }, superToken);
+      userIds[role] = record.id;
+    } catch (err) {
+      // Already exists — find by email
+      const list = await apiCall("GET",
+        `/api/collections/users/records?filter=(email="${user.email}")`,
+        null, superToken);
+      userIds[role] = list.items[0].id;
+    }
 
     // Authenticate each user to get their token
     const auth = await authenticateUser(user.email, user.password);
@@ -115,34 +123,58 @@ async function seedTestData(superToken) {
   // --- Products (use admin user's token — admin role can create products) ---
   const adminToken = userTokens.admin;
   for (const product of TEST_PRODUCTS) {
-    const record = await apiCall(
-      "POST",
-      "/api/collections/products/records",
-      product,
-      adminToken
-    );
-    productIds.push(record.id);
+    try {
+      const record = await apiCall(
+        "POST",
+        "/api/collections/products/records",
+        product,
+        adminToken
+      );
+      productIds.push(record.id);
+    } catch (err) {
+      // Already exists — find by product_code
+      const list = await apiCall("GET",
+        `/api/collections/products/records?filter=(product_code="${product.product_code}")`,
+        null, adminToken);
+      productIds.push(list.items[0].id);
+    }
   }
 
   // --- Customers ---
   for (const customer of TEST_CUSTOMERS) {
-    const record = await apiCall(
-      "POST",
-      "/api/collections/customers/records",
-      customer,
-      adminToken
-    );
-    customerIds.push(record.id);
+    try {
+      const record = await apiCall(
+        "POST",
+        "/api/collections/customers/records",
+        customer,
+        adminToken
+      );
+      customerIds.push(record.id);
+    } catch (err) {
+      // Already exists — find by mobile
+      const list = await apiCall("GET",
+        `/api/collections/customers/records?filter=(mobile="${customer.mobile}")`,
+        null, adminToken);
+      customerIds.push(list.items[0].id);
+    }
   }
 
   // --- Supplier ---
-  const supplierRecord = await apiCall(
-    "POST",
-    "/api/collections/suppliers/records",
-    TEST_SUPPLIER,
-    adminToken
-  );
-  supplierId = supplierRecord.id;
+  try {
+    const supplierRecord = await apiCall(
+      "POST",
+      "/api/collections/suppliers/records",
+      TEST_SUPPLIER,
+      adminToken
+    );
+    supplierId = supplierRecord.id;
+  } catch (err) {
+    // Already exists — find by supplier_code
+    const list = await apiCall("GET",
+      `/api/collections/suppliers/records?filter=(supplier_code="${TEST_SUPPLIER.supplier_code}")`,
+      null, adminToken);
+    supplierId = list.items[0].id;
+  }
 
   // --- Snapshot invoice counter so we can restore it later ---
   let counterSnapshot = null;
