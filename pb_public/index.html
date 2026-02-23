@@ -345,9 +345,10 @@
                 <span>Discount</span>
                 <span x-text="'-' + formatCurrency($store.cart.discountAmount)"></span>
               </div>
-              <div class="flex justify-between text-lg font-bold border-t pt-2">
-                <span>Total</span>
-                <span class="text-primary" x-text="formatCurrency($store.cart.grandTotal)"></span>
+              <div class="flex items-center text-lg font-bold border-t pt-2">
+                <span class="flex-1 text-left">Total</span>
+                <span class="flex-1 text-center" x-text="$store.cart.itemCount + ' PCS'"></span>
+                <span class="flex-1 text-right text-primary" x-text="formatCurrency($store.cart.grandTotal)"></span>
               </div>
 
               <!-- Payment -->
@@ -663,27 +664,33 @@
                       </tr>
                     </template>
                   </tbody>
+                  <tfoot class="border-t">
+                    <tr :class="(invoice.discount_total > 0 || (invoice.adjustment || 0) > 0 || showAdjustment) ? '' : 'hidden'">
+                      <td colspan="2" class="py-0.5 text-gray-500">Subtotal</td>
+                      <td></td>
+                      <td></td>
+                      <td class="py-0.5 text-right" x-text="'₹' + fmt(invoice.subtotal)"></td>
+                    </tr>
+                    <tr :class="(invoice.discount_total > 0 || showAdjustment) ? '' : 'hidden'" class="text-red-500">
+                      <td colspan="2" class="py-0.5">Discount</td>
+                      <td></td>
+                      <td></td>
+                      <td class="py-0.5 text-right" x-text="invoice.discount_total > 0 ? '-₹' + fmt(invoice.discount_total) : '—'"></td>
+                    </tr>
+                    <tr :class="((invoice.adjustment || 0) > 0 || showAdjustment) ? '' : 'hidden'" class="text-red-500">
+                      <td colspan="2" class="py-0.5">Adjustment</td>
+                      <td></td>
+                      <td></td>
+                      <td class="py-0.5 text-right" x-text="(invoice.adjustment || 0) > 0 ? '-₹' + fmt(invoice.adjustment) : '—'"></td>
+                    </tr>
+                    <tr class="border-t font-bold text-sm">
+                      <td colspan="2" class="py-2">Total <span class="text-xs font-normal text-gray-400">(incl. GST)</span></td>
+                      <td class="py-2 text-center" x-text="items.reduce((s, i) => s + i.quantity, 0) + ' PCS'"></td>
+                      <td></td>
+                      <td class="py-2 text-right" x-text="'₹' + fmt(invoice.grand_total)"></td>
+                    </tr>
+                  </tfoot>
                 </table>
-              </div>
-
-              <!-- Totals — always reserve space for discount/adjustment rows to prevent layout jumps -->
-              <div class="px-4 py-2 border-t">
-                <div :class="(invoice.discount_total > 0 || (invoice.adjustment || 0) > 0 || showAdjustment) ? '' : 'hidden'" class="flex justify-between text-xs mb-0.5">
-                  <span class="text-gray-500">Subtotal</span>
-                  <span x-text="'₹' + fmt(invoice.subtotal)"></span>
-                </div>
-                <div :class="(invoice.discount_total > 0 || showAdjustment) ? '' : 'hidden'" class="flex justify-between text-xs text-red-500 mb-0.5">
-                  <span>Discount</span>
-                  <span x-text="invoice.discount_total > 0 ? '-₹' + fmt(invoice.discount_total) : '—'"></span>
-                </div>
-                <div :class="((invoice.adjustment || 0) > 0 || showAdjustment) ? '' : 'hidden'" class="flex justify-between text-xs text-red-500 mb-1">
-                  <span>Adjustment</span>
-                  <span x-text="(invoice.adjustment || 0) > 0 ? '-₹' + fmt(invoice.adjustment) : '—'"></span>
-                </div>
-                <div class="flex justify-between text-base font-bold border-t pt-2 mb-0.5">
-                  <span>Total <span class="text-xs font-normal text-gray-400">(incl. GST)</span></span>
-                  <span x-text="'₹' + fmt(invoice.grand_total)"></span>
-                </div>
               </div>
 
               <!-- Payment & footer -->

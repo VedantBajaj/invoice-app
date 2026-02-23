@@ -183,16 +183,19 @@ function invoiceViewPage() {
 
       t.push("-".repeat(W));
 
+      const totalQty = this.items.reduce((s, i) => s + i.quantity, 0);
+
       // Totals row helper — label left, amount right-aligned in AMT_W
       const totalRow = (label, amt) => rpad(label, W - AMT_W) + lpad(amt, AMT_W);
 
       if (hasDiscount || hasAdjustment) {
-        t.push(totalRow("Subtotal", whole(inv.subtotal)));
+        t.push(rpad("Subtotal", NAME_W) + SEP + lpad(`${totalQty}`, QTY_W) + SEP + lpad(whole(inv.subtotal), AMT_W));
         if (hasDiscount) t.push(totalRow("Discount", "-" + whole(inv.discount_total)));
         if (hasAdjustment) t.push(totalRow("Adjustment", "-" + whole(inv.adjustment)));
         t.push("-".repeat(W));
       }
-      t.push(totalRow("TOTAL", whole(inv.grand_total)));
+      // TOTAL line with qty centered
+      t.push(rpad("TOTAL", NAME_W) + SEP + lpad(`${totalQty}`, QTY_W) + SEP + lpad(whole(inv.grand_total), AMT_W));
       t.push("");
       t.push(`Payment: ${inv.payment_method}`);
       t.push("-".repeat(W));
