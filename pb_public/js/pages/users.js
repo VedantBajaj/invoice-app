@@ -32,6 +32,7 @@ function usersPage() {
 
     async saveNewUser() {
       if (!this.newUser.email || !this.newUser.password) return alert("Email and password required");
+      if (this.newUser.password.length < 8) return alert("Password must be at least 8 characters");
       if (this.newUser.password !== this.newUser.passwordConfirm) return alert("Passwords don't match");
       try {
         await api.createUser(this.newUser);
@@ -39,7 +40,13 @@ function usersPage() {
         await this.load();
       } catch (e) {
         console.error("Create user error:", e);
-        alert("Failed: " + e.message);
+        const fieldErrors = e.data?.data;
+        if (fieldErrors) {
+          const msgs = Object.entries(fieldErrors).map(([f, v]) => `${f}: ${v.message}`).join("\n");
+          alert(msgs);
+        } else {
+          alert("Failed: " + e.message);
+        }
       }
     },
 
