@@ -59,7 +59,7 @@ button { user-select: none; -webkit-user-select: none; }
     background: white !important;
     padding: 0 !important;
     margin: 0 !important;
-    font-size: 11pt !important;
+    font-size: 9pt !important;
     color: black !important;
   }
   main {
@@ -93,8 +93,8 @@ button { user-select: none; -webkit-user-select: none; }
 
   /* Invoice table */
   .invoice-doc table { width: 100% !important; }
-  .invoice-doc table th { font-size: 10pt !important; }
-  .invoice-doc table td { font-size: 10pt !important; }
+  .invoice-doc table th { font-size: 8pt !important; }
+  .invoice-doc table td { font-size: 8pt !important; }
   .invoice-doc table thead tr { border-bottom: 1pt solid #333 !important; }
   .invoice-doc table tbody tr { border-bottom: 0.5pt solid #ccc !important; }
 
@@ -107,7 +107,7 @@ button { user-select: none; -webkit-user-select: none; }
 
   /* Page setup */
   @page {
-    size: A4;
-    margin: 10mm;
+    size: A5;
+    margin: 8mm;
   }
 }
