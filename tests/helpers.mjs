@@ -1,6 +1,13 @@
 /**
  * Shared test utilities for the invoice API test suite.
  * No external dependencies — uses Node 18+ built-in fetch.
+ *
+ * SAFETY RULES:
+ * 1. Every record created is tracked by its PocketBase record ID.
+ * 2. Cleanup ONLY deletes records by their exact tracked ID.
+ * 3. Before deleting, we verify the record still has a TST-/TSUP-/test prefix.
+ * 4. No filter-based bulk deletions. No wildcards. No broad queries for deletion.
+ * 5. If a record fails the prefix check, it is SKIPPED (never deleted).
  */
 
 import {
@@ -87,6 +94,8 @@ async function authenticateUser(email, password) {
  * Creates: users, products, customers, supplier.
  * Returns an object with all created IDs and tokens so tests can reference them
  * and cleanup can delete them.
+ *
+ * Idempotent: if a record already exists (unique constraint), finds it instead.
  */
 async function seedTestData(superToken) {
   const userIds = {};
@@ -192,7 +201,6 @@ async function seedTestData(superToken) {
       };
     }
   } catch {
-    // settings collection may not exist or counter not set — that's fine
     counterSnapshot = null;
   }
 
@@ -200,123 +208,105 @@ async function seedTestData(superToken) {
 }
 
 /**
- * Deletes all test data created by seedTestData.
- * Deletion order matters to avoid foreign-key constraint issues:
- *   stock_movements -> invoices -> customers -> products -> suppliers -> users
- * Also restores the invoice counter to its pre-test value.
+ * SAFE cleanup: deletes ONLY the records tracked by exact ID.
+ *
+ * Before each deletion, fetches the record and verifies it has a test-data prefix
+ * (TST-, TSUP-, test*@test.com, TEST-). If the prefix check fails, the record
+ * is SKIPPED to prevent accidental deletion of real data.
+ *
+ * Order: stock_movements → invoice_items → invoices → customers → products → suppliers → users
  */
 async function cleanupTestData(superToken, seedIds) {
   const { userIds, productIds, customerIds, supplierId, counterSnapshot } = seedIds;
 
-  // Helper: list records matching a filter, then delete each by ID
-  async function deleteByFilter(collection, filter) {
+  /**
+   * Safe delete: fetch the record, verify it has a test prefix, then delete.
+   * Returns true if deleted, false if skipped.
+   */
+  async function safeDelete(collection, id) {
     try {
-      let page = 1;
-      while (true) {
-        const encoded = encodeURIComponent(filter);
-        const data = await apiCall(
-          "GET",
-          `/api/collections/${collection}/records?filter=${encoded}&perPage=200&page=${page}`,
-          null,
-          superToken
-        );
-        for (const item of data.items) {
-          try {
-            await apiCall("DELETE", `/api/collections/${collection}/records/${item.id}`, null, superToken);
-          } catch (e) {
-            // Log but continue — best-effort cleanup
-            console.error(`  cleanup: failed to delete ${collection}/${item.id}: ${e.message}`);
-          }
-        }
-        if (page >= data.totalPages || data.items.length === 0) break;
-        page++;
+      // Fetch the record first to verify it's test data
+      const record = await apiCall(
+        "GET",
+        `/api/collections/${collection}/records/${id}`,
+        null,
+        superToken
+      );
+
+      // Verify test-data prefix based on collection type
+      let isTestData = false;
+      switch (collection) {
+        case "products":
+          isTestData = (record.product_code || "").startsWith("TST-");
+          break;
+        case "customers":
+          isTestData = (record.name || "").startsWith("Test Customer") ||
+                       (record.mobile || "").startsWith("98765000");
+          break;
+        case "suppliers":
+          isTestData = (record.supplier_code || "").startsWith("TSUP-");
+          break;
+        case "users":
+          isTestData = (record.email || "").endsWith("@test.com");
+          break;
+        case "invoices":
+          isTestData = (record.invoice_number || "").startsWith("TEST-") ||
+                       (record.invoice_number || "").startsWith("MANUAL-") ||
+                       (record.invoice_number || "").startsWith("REV-");
+          break;
+        case "invoice_items":
+        case "stock_movements":
+          // These are child records linked to test products/invoices — safe if tracked
+          isTestData = true;
+          break;
+        case "settings":
+          isTestData = (record.key || "").startsWith("test_");
+          break;
+        default:
+          isTestData = false;
       }
-    } catch {
-      // Collection may not exist or filter may match nothing — that's fine
+
+      if (!isTestData) {
+        console.error(`  SAFETY: SKIPPED ${collection}/${id} — failed prefix check`);
+        return false;
+      }
+
+      await apiCall("DELETE", `/api/collections/${collection}/records/${id}`, null, superToken);
+      return true;
+    } catch (e) {
+      // Record may already be deleted (cascade, earlier test, etc.) — that's fine
+      return false;
     }
   }
 
-  // Helper: build PocketBase OR-filter for product IDs
-  // e.g. product="id1" || product="id2"
-  function productFilter(ids) {
-    return ids.map((id) => `product="${id}"`).join(" || ");
-  }
-
-  // Helper: build OR-filter for user IDs (created_by field)
-  function userFilter(ids) {
-    return Object.values(ids).map((id) => `created_by="${id}"`).join(" || ");
-  }
-
-  // 1. Stock movements referencing test products
-  if (productIds.length > 0) {
-    await deleteByFilter("stock_movements", productFilter(productIds));
-  }
-
-  // 2. Invoice items + invoices created by test users
-  //    First delete invoice_items for those invoices, then the invoices themselves
-  if (Object.keys(userIds).length > 0) {
-    // Find invoices created by test users
-    try {
-      const filter = userFilter(userIds);
-      let page = 1;
-      while (true) {
-        const encoded = encodeURIComponent(filter);
-        const data = await apiCall(
-          "GET",
-          `/api/collections/invoices/records?filter=${encoded}&perPage=200&page=${page}`,
-          null,
-          superToken
-        );
-        // Delete invoice items for each invoice
-        for (const inv of data.items) {
-          await deleteByFilter("invoice_items", `invoice="${inv.id}"`);
-          await apiCall("DELETE", `/api/collections/invoices/records/${inv.id}`, null, superToken);
-        }
-        if (page >= data.totalPages || data.items.length === 0) break;
-        page++;
-      }
-    } catch {
-      // Best effort
+  // 1. Delete records created during tests (tracked by ID, in reverse order)
+  if (seedIds.createdDuringTests) {
+    for (const rec of [...seedIds.createdDuringTests].reverse()) {
+      await safeDelete(rec.collection, rec.id);
     }
   }
 
-  // 3. Customers
+  // 2. Customers (by tracked ID)
   for (const id of customerIds) {
-    try {
-      await apiCall("DELETE", `/api/collections/customers/records/${id}`, null, superToken);
-    } catch {
-      // Best effort
-    }
+    await safeDelete("customers", id);
   }
 
-  // 4. Products
+  // 3. Products (by tracked ID)
   for (const id of productIds) {
-    try {
-      await apiCall("DELETE", `/api/collections/products/records/${id}`, null, superToken);
-    } catch {
-      // Best effort
-    }
+    await safeDelete("products", id);
   }
 
-  // 5. Supplier
+  // 4. Supplier (by tracked ID)
   if (supplierId) {
-    try {
-      await apiCall("DELETE", `/api/collections/suppliers/records/${supplierId}`, null, superToken);
-    } catch {
-      // Best effort
-    }
+    await safeDelete("suppliers", supplierId);
   }
 
-  // 6. Users
+  // 5. Users (by tracked ID)
   for (const id of Object.values(userIds)) {
-    try {
-      await apiCall("DELETE", `/api/collections/users/records/${id}`, null, superToken);
-    } catch {
-      // Best effort
-    }
+    await safeDelete("users", id);
   }
 
-  // 7. Restore invoice counter
+  // 6. Restore invoice counter
   if (counterSnapshot) {
     try {
       await apiCall(
@@ -367,10 +357,6 @@ async function assertThrows(asyncFn, expectedStatus = null) {
 
 /**
  * Runs an array of test cases sequentially and prints results.
- *
- * @param {string} name - Suite name
- * @param {Array<{name: string, fn: Function}>} tests - Test cases
- * @returns {{passed: number, failed: number, errors: Array<{name: string, error: Error}>}}
  */
 async function runSuite(name, tests) {
   console.log(`\n${"=".repeat(60)}`);

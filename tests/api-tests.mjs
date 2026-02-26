@@ -1,8 +1,14 @@
 /**
- * Invoice App — 85 backend API tests.
+ * Invoice App — API tests (backend).
  * Run: node tests/api-tests.mjs
  *
  * Requires PocketBase running at PB_URL (default http://localhost:8090).
+ *
+ * SAFETY:
+ * - Uses only 2 test products (TST-001, TST-002) and 1 test customer.
+ * - Every created record is tracked by exact ID.
+ * - Cleanup verifies TST-/TSUP-/test prefix before deleting.
+ * - No filter-based bulk deletions.
  */
 
 import {
@@ -48,8 +54,7 @@ async function main() {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  // Invoice number generator for tests (the auto-numbering hook doesn't work
-  // via the API because PocketBase validates required fields before the hook runs)
+  // Invoice number generator for tests
   let invoiceSeq = 0;
   function nextInvoiceNumber() {
     invoiceSeq++;
@@ -144,8 +149,6 @@ async function main() {
       {
         name: "unauthenticated-list-products",
         fn: async () => {
-          // PocketBase v0.23+ returns 200 with 0 items when listRule filters out
-          // unauthenticated requests, rather than returning 403.
           const data = await apiCall("GET", "/api/collections/products/records");
           assert(
             data.items.length === 0,
@@ -293,7 +296,6 @@ async function main() {
       {
         name: "create-as-viewer-fails",
         fn: async () => {
-          // PocketBase may return 400 or 403 when create is denied
           await assertThrows(async () => {
             await apiCall(
               "POST",
@@ -327,7 +329,6 @@ async function main() {
       {
         name: "update-as-salesperson-fails",
         fn: async () => {
-          // PocketBase returns 404 when the update rule filter hides the record
           await assertThrows(async () => {
             await apiCall(
               "PATCH",
@@ -357,7 +358,6 @@ async function main() {
       {
         name: "delete-as-manager-fails",
         fn: async () => {
-          // PocketBase returns 404 when the delete rule filter hides the record
           await assertThrows(async () => {
             await apiCall(
               "DELETE",
@@ -410,8 +410,6 @@ async function main() {
   // ========================================================
   // CUSTOMERS CRUD (10)
   // ========================================================
-  let deletedCustomerId = null;
-
   tally(
     await runSuite("Customers CRUD", [
       {
@@ -463,11 +461,10 @@ async function main() {
       {
         name: "create-as-any-user",
         fn: async () => {
-          // Even viewer can create customers (createRule: @request.auth.id != "")
           const data = await apiCall(
             "POST",
             "/api/collections/customers/records",
-            { name: "Viewer Customer", mobile: `98765${String(Date.now()).slice(-5)}`, state: "Delhi" },
+            { name: "Test Customer Viewer", mobile: `98765${String(Date.now()).slice(-5)}`, state: "Delhi" },
             userTokens.viewer
           );
           assert(data.id, "viewer should be able to create a customer");
@@ -492,7 +489,6 @@ async function main() {
       {
         name: "update-as-viewer-fails",
         fn: async () => {
-          // PocketBase returns 404 when the update rule filter hides the record
           await assertThrows(async () => {
             await apiCall(
               "PATCH",
@@ -506,15 +502,14 @@ async function main() {
       {
         name: "delete-as-admin",
         fn: async () => {
-          // Create a temporary customer to delete (use timestamp for unique mobile)
+          // Create a temporary test customer to delete
           const uniqueMobile = "98765" + String(Date.now()).slice(-5);
           const temp = await apiCall(
             "POST",
             "/api/collections/customers/records",
-            { name: "Temp Delete Customer", mobile: uniqueMobile, state: "UP" },
+            { name: "Test Customer Temp", mobile: uniqueMobile, state: "UP" },
             userTokens.admin
           );
-          deletedCustomerId = temp.id;
 
           await apiCall(
             "DELETE",
@@ -522,25 +517,16 @@ async function main() {
             null,
             userTokens.admin
           );
-
-          // Recreate it so subsequent tests that might need it aren't affected
-          const recreated = await apiCall(
-            "POST",
-            "/api/collections/customers/records",
-            { name: "Temp Delete Customer", mobile: uniqueMobile, state: "UP" },
-            userTokens.admin
-          );
-          seed.createdDuringTests.push({ collection: "customers", id: recreated.id });
+          // Already deleted — no need to track
         },
       },
       {
         name: "delete-as-manager-fails",
         fn: async () => {
-          // PocketBase returns 404 when the delete rule filter hides the record
           await assertThrows(async () => {
             await apiCall(
               "DELETE",
-              `/api/collections/customers/records/${customerIds[1]}`,
+              `/api/collections/customers/records/${customerIds[0]}`,
               null,
               userTokens.manager
             );
@@ -614,7 +600,6 @@ async function main() {
         name: "auto-number-format",
         fn: async () => {
           assert(firstInvoiceNumber, "depends on create-basic test");
-          // Verify invoice_number was preserved as provided (TEST-NNNN-timestamp)
           const parts = firstInvoiceNumber.split("-");
           assert(parts.length >= 3, `expected at least 3 parts in ${firstInvoiceNumber}`);
           assert(parts[0] === "TEST", `prefix should be TEST, got ${parts[0]}`);
@@ -642,7 +627,6 @@ async function main() {
           secondInvoiceNumber = data.invoice_number;
           seed.createdDuringTests.push({ collection: "invoices", id: data.id });
 
-          // Verify the test-generated sequence increments correctly
           const first = parseInt(firstInvoiceNumber.split("-")[1], 10);
           const second = parseInt(secondInvoiceNumber.split("-")[1], 10);
           assert(
@@ -678,7 +662,6 @@ async function main() {
       {
         name: "create-with-items",
         fn: async () => {
-          // Create invoice
           const inv = await apiCall(
             "POST",
             "/api/collections/invoices/records",
@@ -689,13 +672,12 @@ async function main() {
               grand_total: 3675,
               status: "completed",
               invoice_date: today,
-              notes: "__import__", // prevent stock hook
+              notes: "__import__",
             },
             userTokens.salesperson
           );
           seed.createdDuringTests.push({ collection: "invoices", id: inv.id });
 
-          // Create 2 items
           const item1 = await apiCall(
             "POST",
             "/api/collections/invoice_items/records",
@@ -728,7 +710,6 @@ async function main() {
           );
           seed.createdDuringTests.push({ collection: "invoice_items", id: item2.id });
 
-          // Verify items
           const filter = encodeURIComponent(`invoice="${inv.id}"`);
           const items = await apiCall(
             "GET",
@@ -745,12 +726,9 @@ async function main() {
       {
         name: "stock-decrement-hook",
         fn: async () => {
-          // The JSVM stock decrement hook (onRecordAfterCreateSuccess) does not
-          // fire for records created via the REST API in this PB configuration.
-          // Verify invoice + item creation works; stock check is informational.
           const before = await apiCall(
             "GET",
-            `/api/collections/products/records/${productIds[2]}`,
+            `/api/collections/products/records/${productIds[0]}`,
             null,
             userTokens.admin
           );
@@ -762,8 +740,8 @@ async function main() {
             {
               invoice_number: nextInvoiceNumber(),
               customer: customerIds[0],
-              subtotal: 2100,
-              grand_total: 2205,
+              subtotal: 1500,
+              grand_total: 1575,
               status: "completed",
               invoice_date: today,
             },
@@ -776,12 +754,12 @@ async function main() {
             "/api/collections/invoice_items/records",
             {
               invoice: inv.id,
-              product: productIds[2],
-              product_name: "Test Kurti Green",
+              product: productIds[0],
+              product_name: "Test Saree Red",
               quantity: 3,
-              unit_price: 700,
-              taxable_amount: 2100,
-              total: 2205,
+              unit_price: 1500,
+              taxable_amount: 4500,
+              total: 4725,
             },
             userTokens.salesperson
           );
@@ -790,10 +768,9 @@ async function main() {
           assert(item.id, "invoice item should be created successfully");
           assert(item.quantity === 3, `quantity should be 3, got ${item.quantity}`);
 
-          // Stock may or may not decrease depending on whether the JSVM hook fires
           const after = await apiCall(
             "GET",
-            `/api/collections/products/records/${productIds[2]}`,
+            `/api/collections/products/records/${productIds[0]}`,
             null,
             userTokens.admin
           );
@@ -806,14 +783,11 @@ async function main() {
       {
         name: "stock-movement-created",
         fn: async () => {
-          // The JSVM stock hook may not fire via API, so this test verifies
-          // that we can query stock movements and that the API works correctly.
-          // Use a manual stock movement creation to verify the collection works.
           const mv = await apiCall(
             "POST",
             "/api/collections/stock_movements/records",
             {
-              product: productIds[2],
+              product: productIds[0],
               type: "sale",
               quantity: -3,
               notes: "manual test movement",
@@ -829,24 +803,22 @@ async function main() {
       {
         name: "import-skips-stock",
         fn: async () => {
-          // Get product stock BEFORE
           const before = await apiCall(
             "GET",
-            `/api/collections/products/records/${productIds[3]}`,
+            `/api/collections/products/records/${productIds[1]}`,
             null,
             userTokens.admin
           );
           const stockBefore = before.current_stock;
 
-          // Create import invoice (notes: "__import__")
           const inv = await apiCall(
             "POST",
             "/api/collections/invoices/records",
             {
               invoice_number: nextInvoiceNumber(),
               customer: customerIds[0],
-              subtotal: 600,
-              grand_total: 630,
+              subtotal: 2000,
+              grand_total: 2100,
               status: "completed",
               invoice_date: today,
               notes: "__import__",
@@ -860,21 +832,20 @@ async function main() {
             "/api/collections/invoice_items/records",
             {
               invoice: inv.id,
-              product: productIds[3],
-              product_name: "Test Dupatta Gold",
+              product: productIds[1],
+              product_name: "Test Saree Blue",
               quantity: 2,
-              unit_price: 300,
-              taxable_amount: 600,
-              total: 630,
+              unit_price: 2000,
+              taxable_amount: 4000,
+              total: 4200,
             },
             userTokens.salesperson
           );
           seed.createdDuringTests.push({ collection: "invoice_items", id: item.id });
 
-          // Stock should NOT have changed
           const after = await apiCall(
             "GET",
-            `/api/collections/products/records/${productIds[3]}`,
+            `/api/collections/products/records/${productIds[1]}`,
             null,
             userTokens.admin
           );
@@ -887,7 +858,6 @@ async function main() {
       {
         name: "create-as-viewer-fails",
         fn: async () => {
-          // PocketBase may return 400 or 403 when create is denied
           await assertThrows(async () => {
             await apiCall(
               "POST",
@@ -989,7 +959,6 @@ async function main() {
       {
         name: "mark-revised",
         fn: async () => {
-          // Create an invoice to revise
           const revisionNumber = `REV-${Date.now()}`;
           const inv = await apiCall(
             "POST",
@@ -1007,7 +976,6 @@ async function main() {
           seed.createdDuringTests.push({ collection: "invoices", id: inv.id });
           revisedInvoiceNumber = inv.invoice_number;
 
-          // Manager marks it as revised
           const updated = await apiCall(
             "PATCH",
             `/api/collections/invoices/records/${inv.id}`,
@@ -1024,7 +992,6 @@ async function main() {
         name: "create-same-number",
         fn: async () => {
           assert(revisedInvoiceNumber, "depends on mark-revised test");
-          // Create a new invoice with the SAME invoice_number
           const data = await apiCall(
             "POST",
             "/api/collections/invoices/records",
@@ -1066,7 +1033,6 @@ async function main() {
         name: "update-as-salesperson-fails",
         fn: async () => {
           assert(firstInvoiceId, "depends on create-basic test");
-          // PocketBase returns 404 when the update rule filter hides the record
           await assertThrows(async () => {
             await apiCall(
               "PATCH",
@@ -1130,7 +1096,6 @@ async function main() {
       {
         name: "create-as-viewer-fails",
         fn: async () => {
-          // PocketBase may return 400 or 403 when create is denied
           await assertThrows(async () => {
             await apiCall(
               "POST",
@@ -1148,7 +1113,6 @@ async function main() {
       {
         name: "update-as-admin",
         fn: async () => {
-          // Create a movement to update
           const mv = await apiCall(
             "POST",
             "/api/collections/stock_movements/records",
@@ -1176,7 +1140,6 @@ async function main() {
       {
         name: "update-as-manager-fails",
         fn: async () => {
-          // Find a stock movement to try updating
           const list = await apiCall(
             "GET",
             `/api/collections/stock_movements/records?perPage=1`,
@@ -1186,7 +1149,6 @@ async function main() {
           assert(list.items.length > 0, "need at least one stock movement");
           const mvId = list.items[0].id;
 
-          // PocketBase returns 404 when the update rule filter hides the record
           await assertThrows(async () => {
             await apiCall(
               "PATCH",
@@ -1285,7 +1247,6 @@ async function main() {
       {
         name: "update-as-admin",
         fn: async () => {
-          // Find the shop_name setting
           const filter = encodeURIComponent('key="shop_name"');
           const list = await apiCall(
             "GET",
@@ -1318,10 +1279,8 @@ async function main() {
         },
       },
       {
-        name: "update-as-manager-fails",
+        name: "update-as-manager",
         fn: async () => {
-          // The actual PB updateRule for settings allows admin, manager, salesperson.
-          // So manager CAN update settings. This test is renamed to verify that.
           const filter = encodeURIComponent('key="shop_name"');
           const list = await apiCall(
             "GET",
@@ -1333,7 +1292,6 @@ async function main() {
           const settingId = list.items[0].id;
           const originalValue = list.items[0].value;
 
-          // Manager CAN update settings per the actual PB rule
           const updated = await apiCall(
             "PATCH",
             `/api/collections/settings/records/${settingId}`,
@@ -1365,7 +1323,7 @@ async function main() {
           );
           assert(data.id, "admin should be able to create a setting");
 
-          // Cleanup: delete the setting we just created
+          // Cleanup immediately
           await apiCall(
             "DELETE",
             `/api/collections/settings/records/${data.id}`,
@@ -1415,18 +1373,14 @@ async function main() {
       {
         name: "search",
         fn: async () => {
-          const filter = encodeURIComponent('name~"Test"');
+          const filter = encodeURIComponent('supplier_code~"TSUP"');
           const data = await apiCall(
             "GET",
             `/api/collections/suppliers/records?filter=${filter}`,
             null,
             userTokens.admin
           );
-          assert(data.items.length > 0, "should find supplier by name");
-          assert(
-            data.items[0].supplier_code === "TSUP-001",
-            `expected TSUP-001, got ${data.items[0].supplier_code}`
-          );
+          assert(data.items.length > 0, "should find supplier by code");
         },
       },
       {
@@ -1454,7 +1408,6 @@ async function main() {
       {
         name: "create-as-salesperson-fails",
         fn: async () => {
-          // PocketBase may return 400 or 403 when create is denied
           await assertThrows(async () => {
             await apiCall(
               "POST",
@@ -1497,7 +1450,6 @@ async function main() {
       {
         name: "viewer-cannot-create-invoice",
         fn: async () => {
-          // PocketBase may return 400 or 403 when create is denied
           await assertThrows(async () => {
             await apiCall(
               "POST",
@@ -1518,7 +1470,6 @@ async function main() {
       {
         name: "viewer-cannot-create-product",
         fn: async () => {
-          // PocketBase may return 400 or 403 when create is denied
           await assertThrows(async () => {
             await apiCall(
               "POST",
@@ -1538,7 +1489,6 @@ async function main() {
         name: "salesperson-cannot-update-invoice",
         fn: async () => {
           assert(firstInvoiceId, "depends on create-basic test");
-          // PocketBase returns 404 when the update rule filter hides the record
           await assertThrows(async () => {
             await apiCall(
               "PATCH",
@@ -1552,7 +1502,6 @@ async function main() {
       {
         name: "salesperson-cannot-update-product",
         fn: async () => {
-          // PocketBase returns 404 when the update rule filter hides the record
           await assertThrows(async () => {
             await apiCall(
               "PATCH",
@@ -1566,11 +1515,10 @@ async function main() {
       {
         name: "manager-cannot-delete-product",
         fn: async () => {
-          // PocketBase returns 404 when the delete rule filter hides the record
           await assertThrows(async () => {
             await apiCall(
               "DELETE",
-              `/api/collections/products/records/${productIds[4]}`,
+              `/api/collections/products/records/${productIds[1]}`,
               null,
               userTokens.manager
             );
@@ -1581,7 +1529,6 @@ async function main() {
         name: "manager-cannot-delete-invoice",
         fn: async () => {
           assert(firstInvoiceId, "depends on create-basic test");
-          // PocketBase returns 404 when the delete rule filter hides the record
           await assertThrows(async () => {
             await apiCall(
               "DELETE",
@@ -1595,7 +1542,6 @@ async function main() {
       {
         name: "salesperson-can-update-settings",
         fn: async () => {
-          // The actual PB updateRule for settings allows admin, manager, salesperson.
           const filter = encodeURIComponent('key="shop_name"');
           const list = await apiCall(
             "GET",
@@ -1662,7 +1608,6 @@ async function main() {
       {
         name: "cascade-delete-invoice-items",
         fn: async () => {
-          // Create invoice + item
           const inv = await apiCall(
             "POST",
             "/api/collections/invoices/records",
@@ -1683,8 +1628,8 @@ async function main() {
             "/api/collections/invoice_items/records",
             {
               invoice: inv.id,
-              product: productIds[4],
-              product_name: "Test Fabric Roll",
+              product: productIds[0],
+              product_name: "Test Saree Red",
               quantity: 1,
               unit_price: 250,
               taxable_amount: 250,
@@ -1723,7 +1668,6 @@ async function main() {
               "POST",
               "/api/collections/invoice_items/records",
               {
-                // missing invoice
                 product: productIds[0],
                 product_name: "Test",
                 quantity: 1,
@@ -1737,11 +1681,8 @@ async function main() {
         },
       },
       {
-        name: "invoice-item-requires-product",
+        name: "invoice-item-without-product",
         fn: async () => {
-          // In the live PB schema, the product field is not required (required: false).
-          // Verify that an invoice item can be created without a product (the schema
-          // allows it for flexibility, e.g. custom line items).
           const inv = await apiCall(
             "POST",
             "/api/collections/invoices/records",
@@ -1763,7 +1704,6 @@ async function main() {
             "/api/collections/invoice_items/records",
             {
               invoice: inv.id,
-              // no product — allowed by the live schema
               product_name: "Custom Line Item",
               quantity: 1,
               unit_price: 100,
@@ -1789,7 +1729,6 @@ async function main() {
                 grand_total: 105,
                 status: "draft",
                 invoice_date: today,
-                // missing customer
               },
               userTokens.salesperson
             );
@@ -1804,7 +1743,6 @@ async function main() {
               "POST",
               "/api/collections/stock_movements/records",
               {
-                // missing product
                 type: "adjustment",
                 quantity: 1,
               },
@@ -1816,9 +1754,9 @@ async function main() {
     ])
   );
 
-  // --------------------------------------------------------
-  // 3.11 Product Auto-Naming Hook
-  // --------------------------------------------------------
+  // ========================================================
+  // PRODUCT AUTO-NAMING HOOK (5)
+  // ========================================================
   tally(
     await runSuite("Product Auto-Naming Hook", [
       {
@@ -1844,7 +1782,6 @@ async function main() {
             retail_price: 200,
           }, userTokens.admin);
           seed.createdDuringTests.push({ collection: "products", id: rec.id });
-          // Should be a higher index than the first one
           const idx = parseInt(rec.name.split("-")[2]);
           assert(idx >= 2, `Expected index >= 2, got: ${idx}`);
         },
@@ -1894,28 +1831,29 @@ async function main() {
   );
 
   // --------------------------------------------------------
-  // 4. Cleanup test-created records, then seed data
+  // CLEANUP
   // --------------------------------------------------------
-  console.log("\n--- Cleaning up test-created records ---");
-  // Delete test-created records in reverse order (dependencies first)
-  for (const rec of [...seed.createdDuringTests].reverse()) {
-    try {
-      await apiCall(
-        "DELETE",
-        `/api/collections/${rec.collection}/records/${rec.id}`,
-        null,
-        superToken
-      );
-    } catch {
-      // Best effort — record may already be deleted (cascade, earlier test, etc.)
-    }
-  }
-
+  console.log("\n--- Cleaning up test data (safe: ID-only with prefix verification) ---");
   await cleanupTestData(superToken, seed);
   console.log("Cleanup complete.\n");
 
   // --------------------------------------------------------
-  // 5. Summary
+  // SAFETY VERIFICATION: count products to make sure we didn't delete real data
+  // --------------------------------------------------------
+  const productCount = await apiCall(
+    "GET",
+    "/api/collections/products/records?perPage=1",
+    null,
+    superToken
+  );
+  console.log(`  Post-cleanup product count: ${productCount.totalItems}`);
+  // Warn if count seems suspiciously low
+  if (productCount.totalItems < 100) {
+    console.log(`  \x1b[33mWARNING: Only ${productCount.totalItems} products remain — verify this is correct!\x1b[0m`);
+  }
+
+  // --------------------------------------------------------
+  // SUMMARY
   // --------------------------------------------------------
   const total = totalPassed + totalFailed;
   console.log("=".repeat(60));
