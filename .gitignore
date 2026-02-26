@@ -24,3 +24,13 @@ Thumbs.db
 docs/raintek-*
 docs/integration-plan.md
 docs/private/
+
+# ACME / SSL tools (legacy)
+acme.sh-master/
+master.tar.gz
+
+# Claude Code config
+.claude/
+
+# Operations guide (contains server credentials)
+OPERATIONS.md
