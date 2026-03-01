@@ -1,0 +1,2955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Utah Road Trip — Feb 27–Mar 7, 2026</title>
+<link rel="manifest" href="/utah-manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Utah Trip">
+<style>
+  :root {
+    --d1: #6B46C1; --d2: #C53030; --d3: #C05621; --d4: #276749;
+    --d5: #2B6CB0; --d6: #B83280; --d7: #553C9A; --d8: #285E61; --d9: #744210;
+    --nav-h: 48px; --legend-h: 40px; --sticky-h: 90px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f1a; color: #e2e8f0; line-height: 1.5; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    padding: 60px 24px 40px; text-align: center; border-bottom: 1px solid #2d3748;
+  }
+  .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; background: linear-gradient(135deg, #f59e0b, #ef4444, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px; }
+  .hero .subtitle { color: #94a3b8; font-size: 1.1rem; margin-bottom: 20px; }
+  .hero-meta { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 20px; }
+  .hero-tag { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 6px 16px; font-size: 0.85rem; color: #cbd5e1; }
+  .hero-tag strong { color: #f8fafc; }
+
+  .legend { display: flex; flex-wrap: nowrap; gap: 6px; justify-content: center; padding: 8px 10px; background: #111827; border-bottom: 1px solid #1f2937; position: sticky; top: var(--nav-h); z-index: 99; overflow-x: auto; scrollbar-width: none; will-change: transform; -webkit-transform: translateZ(0); transform: translateZ(0); }
+  .legend::-webkit-scrollbar { display: none; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: #9ca3af; white-space: nowrap; flex-shrink: 0; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .day-nav { position: sticky; top: 0; z-index: 100; background: #0d1117; border-bottom: 2px solid #1f2937; display: flex; overflow-x: auto; scrollbar-width: none; padding: 0 8px; will-change: transform; -webkit-transform: translateZ(0); transform: translateZ(0); }
+  .day-nav::-webkit-scrollbar { display: none; }
+  .day-nav a { flex-shrink: 0; padding: 12px 14px; text-decoration: none; font-size: 0.78rem; font-weight: 600; color: #6b7280; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .day-nav a:hover { color: #f8fafc; }
+  .day-nav a.active { color: #f8fafc; }
+  .day-nav a[data-day="1"].active { border-bottom-color: var(--d1); }
+  .day-nav a[data-day="2"].active { border-bottom-color: var(--d2); }
+  .day-nav a[data-day="3"].active { border-bottom-color: var(--d3); }
+  .day-nav a[data-day="4"].active { border-bottom-color: var(--d4); }
+  .day-nav a[data-day="5"].active { border-bottom-color: var(--d5); }
+  .day-nav a[data-day="6"].active { border-bottom-color: var(--d6); }
+  .day-nav a[data-day="7"].active { border-bottom-color: var(--d7); }
+  .day-nav a[data-day="8"].active { border-bottom-color: var(--d8); }
+  .day-nav a[data-day="9"].active { border-bottom-color: var(--d9); }
+  .day-nav a[data-extra].active { border-bottom-color: #f59e0b; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; }
+
+  .day-section { margin-bottom: 56px; scroll-margin-top: var(--sticky-h); }
+  .day-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px; padding: 20px 24px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-left: 5px solid var(--day-color); }
+  .day-number { font-size: 2.5rem; font-weight: 900; color: var(--day-color); line-height: 1; min-width: 60px; }
+  .day-title-block h2 { font-size: 1.25rem; font-weight: 700; color: #f1f5f9; }
+  .day-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .day-badge { font-size: 0.73rem; padding: 3px 10px; border-radius: 12px; background: rgba(255,255,255,0.06); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); }
+  .day-badge.hotel { background: rgba(99,102,241,0.15); color: #a5b4fc; border-color: rgba(99,102,241,0.3); cursor: pointer; }
+  .day-badge.hotel:hover { background: rgba(99,102,241,0.3); border-color: rgba(99,102,241,0.6); color: #c7d2fe; }
+  .day-badge.warn { background: rgba(239,68,68,0.15); color: #fca5a5; border-color: rgba(239,68,68,0.3); }
+  .day-badge.star { background: rgba(139,92,246,0.2); color: #c4b5fd; border-color: rgba(139,92,246,0.3); }
+  .day-badge.final { background: rgba(245,158,11,0.15); color: #fcd34d; border-color: rgba(245,158,11,0.3); }
+
+  .timeline { position: relative; padding-left: 52px; }
+  .timeline::before { content: ''; position: absolute; left: 20px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--day-color), transparent); opacity: 0.25; }
+
+  .event { position: relative; margin-bottom: 14px; }
+  .event::before { content: ''; position: absolute; left: -37px; top: 18px; width: 10px; height: 10px; border-radius: 50%; background: var(--dot-color, #4b5563); border: 2px solid #0f0f1a; }
+  .event-card { border-radius: 12px; padding: 14px 16px; border: 1px solid; transition: transform 0.15s; cursor: default; }
+  .event-card:hover { transform: translateX(2px); }
+
+  .event.food .event-card    { background: rgba(168,85,247,0.08); border-color: rgba(168,85,247,0.25); }
+  .event.food::before        { background: #a855f7; }
+  .event.activity .event-card{ background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.25); }
+  .event.activity::before    { background: #10b981; }
+  .event.drive .event-card   { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.25); }
+  .event.drive::before       { background: #3b82f6; }
+  .event.prep .event-card    { background: rgba(107,114,128,0.08); border-color: rgba(107,114,128,0.2); }
+  .event.prep::before        { background: #6b7280; }
+  .event.note .event-card    { background: rgba(202,138,4,0.08); border-color: rgba(202,138,4,0.3); }
+  .event.note::before        { background: #ca8a04; }
+  .event.critical .event-card{ background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.4); }
+  .event.critical::before    { background: #ef4444; }
+
+  .event-time { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 3px; }
+  .event.food .event-time     { color: #a855f7; }
+  .event.activity .event-time { color: #34d399; }
+  .event.drive .event-time    { color: #60a5fa; }
+  .event.prep .event-time     { color: #9ca3af; }
+  .event.note .event-time     { color: #fbbf24; }
+  .event.critical .event-time { color: #f87171; }
+
+  .event-title { font-size: 0.95rem; font-weight: 600; color: #f1f5f9; margin-bottom: 4px; }
+  .event-body  { font-size: 0.82rem; color: #9ca3af; }
+  .event-body p { margin-bottom: 4px; }
+  .event-body p:last-child { margin-bottom: 0; }
+  .event-body strong { color: #cbd5e1; }
+  .note-text { color: #fbbf24 !important; font-size: 0.78rem; }
+
+  .meal-tiers { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tier { font-size: 0.72rem; padding: 3px 10px; border-radius: 10px; font-weight: 600; }
+  .tier-top  { background: rgba(16,185,129,0.18); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+  .tier-back { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.25); }
+  .tier-sos  { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+
+  .maps-btn { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; background: rgba(66,133,244,0.15); border: 1px solid rgba(66,133,244,0.3); color: #93c5fd; text-decoration: none; font-size: 0.75rem; font-weight: 600; padding: 5px 12px; border-radius: 8px; transition: all 0.15s; }
+  .maps-btn:hover { background: rgba(66,133,244,0.28); color: #bfdbfe; }
+  .maps-btn::before { content: '📍'; font-size: 0.85em; }
+
+  .reserve-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 8px; margin-top: 6px; }
+  .reserve-badge::before { content: '⚠ '; }
+
+  .info-section { margin-bottom: 48px; scroll-margin-top: var(--sticky-h); }
+  .info-section h2 { font-size: 1.35rem; font-weight: 800; color: #f8fafc; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #1f2937; }
+
+  /* Reservation accordion cards */
+  .res-card { background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.12); border-radius: 14px; margin-bottom: 12px; overflow: hidden; transition: border-color 0.2s, background 0.2s; }
+  .res-card:hover { border-color: rgba(255,255,255,0.28); background: rgba(255,255,255,0.07); }
+  .res-card.confirmed { border-color: rgba(52,211,153,0.55); background: rgba(52,211,153,0.05); }
+  .res-card.pending   { border-color: rgba(251,191,36,0.5); background: rgba(251,191,36,0.04); }
+  .res-card.booked    { border-color: rgba(165,180,252,0.55); background: rgba(165,180,252,0.05); }
+  .res-header { display: flex; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer; user-select: none; }
+  .res-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; flex-shrink: 0; }
+  .res-card.confirmed .res-num { background: rgba(52,211,153,0.15); color: #34d399; }
+  .res-card.pending   .res-num { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .res-card.booked    .res-num { background: rgba(165,180,252,0.15); color: #a5b4fc; }
+  .res-summary { flex: 1; min-width: 0; }
+  .res-summary h3 { font-size: 0.95rem; font-weight: 700; color: #f1f5f9; margin-bottom: 2px; }
+  .res-summary p { font-size: 0.8rem; color: #9ca3af; }
+  .res-status { font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+  .res-card.confirmed .res-status { background: rgba(52,211,153,0.15); color: #34d399; }
+  .res-card.pending   .res-status { background: rgba(251,191,36,0.12); color: #fbbf24; }
+  .res-card.booked    .res-status { background: rgba(165,180,252,0.15); color: #a5b4fc; }
+  .res-chevron { color: #6b7280; font-size: 0.9rem; transition: transform 0.25s; flex-shrink: 0; }
+  .res-card.open .res-chevron { transform: rotate(180deg); }
+  .res-body { display: none; padding: 0 18px 18px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .res-card.open .res-body { display: block; padding-top: 16px; }
+  .res-detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .res-detail-item .lbl { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 3px; }
+  .res-detail-item .val { font-size: 0.85rem; color: #e2e8f0; font-weight: 600; }
+  .res-detail-item .sub { font-size: 0.75rem; color: #9ca3af; margin-top: 2px; }
+
+  /* Pass modal */
+  .pass-thumb { cursor: zoom-in; transition: opacity 0.2s, transform 0.2s; }
+  .pass-thumb:hover { opacity: 0.85; transform: scale(1.02); }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal-overlay img { max-width: 100%; max-height: 90vh; border-radius: 12px; box-shadow: 0 25px 80px rgba(0,0,0,0.7); }
+  .modal-close { position: absolute; top: 16px; right: 20px; background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 1.4rem; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .modal-close:hover { background: rgba(255,255,255,0.2); }
+  /* Booking detail modal */
+  .bk-modal-box { background: #1a1f2e; border: 1px solid rgba(99,102,241,0.4); border-radius: 18px; padding: 28px; max-width: 420px; width: 100%; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto; }
+  .bk-modal-box h3 { font-size: 1.2rem; font-weight: 700; color: #f1f5f9; margin: 0 0 4px; }
+  .bk-modal-box .bk-nights { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #a5b4fc; margin-bottom: 14px; }
+  .bk-row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.83rem; }
+  .bk-row:last-child { border-bottom: none; }
+  .bk-lbl { color: #6b7280; white-space: nowrap; }
+  .bk-val { color: #e2e8f0; text-align: right; }
+  .bk-conf { font-family: monospace; font-size: 0.85rem; color: #c7d2fe; font-weight: 700; }
+  .bk-paid { color: #34d399; font-size: 0.8rem; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(52,211,153,0.2); }
+  .bk-warn { color: #fca5a5; font-size: 0.8rem; margin-top: 8px; }
+  .hero-tag.clickable { cursor: pointer; text-decoration: underline dotted rgba(255,255,255,0.3); }
+  .hero-tag.clickable:hover { background: rgba(255,255,255,0.08); border-radius: 6px; }
+
+  .grocery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .grocery-card { background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; padding: 16px; }
+  .grocery-card .when { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #34d399; margin-bottom: 4px; }
+  .grocery-card h3 { font-size: 0.9rem; font-weight: 700; color: #e2e8f0; margin-bottom: 6px; }
+  .grocery-card p { font-size: 0.8rem; color: #9ca3af; }
+
+  .tips-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .tips-table th { text-align: left; padding: 8px 12px; background: rgba(255,255,255,0.04); color: #6b7280; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tips-table td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #9ca3af; vertical-align: top; }
+  .tips-table td:first-child { color: #e2e8f0; font-weight: 600; white-space: nowrap; min-width: 180px; }
+  .tips-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .checklist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; }
+  .check-item { display: flex; align-items: flex-start; gap: 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px 14px; }
+  .check-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: #10b981; flex-shrink: 0; margin-top: 2px; cursor: pointer; }
+  .check-item label { font-size: 0.83rem; color: #cbd5e1; cursor: pointer; }
+  .check-item label span { display: block; font-size: 0.72rem; color: #6b7280; margin-top: 2px; }
+
+  .kit-box { margin-top: 20px; background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.25); border-radius: 12px; padding: 18px; }
+  .kit-box h3 { color: #fca5a5; font-size: 0.95rem; margin-bottom: 8px; }
+  .kit-box p { font-size: 0.82rem; color: #9ca3af; margin-bottom: 4px; }
+  .kit-box .red { color: #f87171; font-size: 0.78rem; margin-top: 6px; }
+
+  .footer { text-align: center; padding: 32px; color: #4b5563; font-size: 0.78rem; border-top: 1px solid #1f2937; }
+
+  .info-card { background: rgba(255,255,255,0.07); border: 2px solid rgba(255,255,255,0.18); border-radius: 14px; padding: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.35); }
+  .info-card h3 { font-size: 0.95rem; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
+  .info-card p { font-size: 0.82rem; color: #9ca3af; margin-bottom: 4px; }
+  .info-card p:last-child { margin-bottom: 0; }
+
+  @media (max-width: 600px) {
+    .timeline { padding-left: 40px; }
+    .day-header { flex-direction: column; gap: 8px; }
+    .tips-table td:first-child { white-space: normal; min-width: 0; }
+  }
+
+  /* Search bar */
+  .search-wrap { padding: 20px 20px 0; max-width: 560px; margin: 0 auto; position: relative; }
+  .search-input-row { position: relative; }
+  .search-input { width: 100%; padding: 12px 16px 12px 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.07); color: #f1f5f9; font-size: 0.92rem; outline: none; transition: border-color 0.2s, background 0.2s; }
+  .search-input::placeholder { color: #6b7280; }
+  .search-input:focus { border-color: rgba(139,92,246,0.6); background: rgba(255,255,255,0.1); }
+  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #6b7280; pointer-events: none; font-size: 1rem; }
+  .search-results { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #1a1f2e; border: 1px solid rgba(255,255,255,0.14); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.65); z-index: 200; max-height: 360px; overflow-y: auto; display: none; }
+  .search-results.open { display: block; }
+  .search-result-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .search-result-item:last-child { border-bottom: none; }
+  .search-result-item:hover { background: rgba(255,255,255,0.06); }
+  .search-day-pill { font-size: 0.68rem; font-weight: 800; padding: 3px 8px; border-radius: 8px; white-space: nowrap; flex-shrink: 0; }
+  .search-result-title { font-size: 0.85rem; font-weight: 600; color: #e2e8f0; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .search-result-day { font-size: 0.72rem; color: #6b7280; white-space: nowrap; flex-shrink: 0; }
+  .search-no-results { padding: 16px 14px; text-align: center; color: #6b7280; font-size: 0.85rem; }
+
+  /* Tab switcher */
+  .tab-switcher { display: flex; gap: 0; justify-content: center; padding: 0; background: #0b0f17; border-bottom: 2px solid rgba(255,255,255,0.07); }
+  .tab-btn { flex: 1; max-width: 240px; padding: 14px 24px; border: none; border-bottom: 3px solid transparent; background: transparent; color: #64748b; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; letter-spacing: 0.04em; text-transform: uppercase; }
+  .tab-btn:hover { color: #94a3b8; background: rgba(255,255,255,0.03); }
+  .tab-btn.relaxing.active { color: #34d399; border-bottom-color: #34d399; }
+  .tab-btn.exciting.active { color: #f59e0b; border-bottom-color: #f59e0b; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+  /* Tips and packing are shared across both tabs */
+</style>
+</head>
+<body class="tab-exciting">
+
+<div class="hero">
+  <h1>Utah Road Trip</h1>
+  <p class="subtitle">Hour-by-Hour Timeline · Feb 27 – Mar 7, 2026</p>
+  <div class="hero-meta">
+    <div class="hero-tag"><strong>Route:</strong> SLC → Moab → Bryce → Springdale/Zion → Las Vegas</div>
+    <div class="hero-tag"><strong>Hotels:</strong> Hyatt Moab (D1–3) · Ruby's Inn (D4–5) · Hyatt Springdale (D6–8)</div>
+    <div class="hero-tag clickable" onclick="showBooking('car')"><strong>Car:</strong> Budget Jeep 4WD · Feb 27 5PM → Mar 7 10PM ↗</div>
+    <div class="hero-tag clickable" onclick="document.getElementById('passModal').classList.add('open')"><strong>Pass:</strong> America the Beautiful ↗ tap to view</div>
+  </div>
+</div>
+
+<div class="search-wrap" id="searchWrap">
+  <div class="search-input-row">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="searchInput" type="text" placeholder="Search activities, places, restaurants…" autocomplete="off" oninput="doSearch(this.value)" onfocus="if(this.value) doSearch(this.value)" />
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<div class="tab-switcher" id="tabSwitcher">
+  <button class="tab-btn relaxing" onclick="switchTab('relaxing')">😌 Relaxing</button>
+  <button class="tab-btn exciting active" onclick="switchTab('exciting')">🏔 Exciting</button>
+</div>
+<nav class="day-nav" id="dayNav">
+  <a href="#day1" data-day="1" onclick="navTo('day1');return false;">D1 · Feb 27</a>
+  <a href="#day2" data-day="2" onclick="navTo('day2');return false;">D2 · Feb 28</a>
+  <a href="#day3" data-day="3" onclick="navTo('day3');return false;">D3 · Mar 1</a>
+  <a href="#day4" data-day="4" onclick="navTo('day4');return false;">D4 · Mar 2 ⚠</a>
+  <a href="#day5" data-day="5" onclick="navTo('day5');return false;">D5 · Mar 3</a>
+  <a href="#day6" data-day="6" onclick="navTo('day6');return false;">D6 · Mar 4</a>
+  <a href="#day7" data-day="7" onclick="navTo('day7');return false;">D7 · Mar 5</a>
+  <a href="#day8" data-day="8" onclick="navTo('day8');return false;">D8 · Mar 6</a>
+  <a href="#day9" data-day="9" onclick="navTo('day9');return false;">D9 · Mar 7</a>
+  <a href="#reservations" data-extra="1" onclick="navTo('reservations');return false;">Reservations</a>
+  <a href="#grocery" data-extra="1" onclick="navTo('grocery');return false;">Grocery</a>
+  <a href="#tips" data-extra="1" onclick="navTo('tips');return false;">Tips</a>
+  <a href="#packing" data-extra="1" onclick="navTo('packing');return false;">Packing</a>
+  <a href="#bookings" data-extra="1" onclick="navTo('bookings');return false;">Bookings</a>
+  <a href="#pass" data-extra="1" onclick="navTo('pass');return false;">Pass</a>
+</nav>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Food</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Activity</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Drive</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#6b7280"></div>Prep</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ca8a04"></div>Note</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Critical</div>
+</div>
+
+<div class="container">
+
+<div id="tab-relaxing" class="tab-pane">
+
+<!-- DAY 1 -->
+<div class="day-section" id="day1" style="--day-color: var(--d1)">
+  <div class="day-header">
+    <div class="day-number">D1</div>
+    <div class="day-title-block">
+      <h2>Friday, Feb 27 — SLC to Moab</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('moab')">🏨 Hyatt Place Moab · H-RP3GQ2DK247S</span>
+        <span class="day-badge">🌡 18/4°C</span>
+        <span class="day-badge">🚗 ~235 mi</span>
+        <span class="day-badge">✈ AA 1456 arrives SLC 3:05 PM</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">3:05 PM · AA 1456 · Conf: KWRWCX</div>
+        <div class="event-title">Land at SLC Airport</div>
+        <div class="event-body"><p>Collect bags. <strong>Budget car rental pickup at 5:00 PM</strong> — 3974 W 500 N, SLC. Jeep Grand Cherokee 4WD or similar. Costco conf C483453470 / Budget conf 40126093US0. Budget roadside: 1-866-317-4711.</p>
+        <p class="note-text">⚠ Flight arrives 3:05 PM → bags ~3:30 PM → car pickup 5 PM → depart ~5:15 PM → Moab ~9–9:30 PM. Sabaku 7:30 PM reservation is too early given actual flight time — may need to push to 8 PM or call ahead.</p></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">~5:15 PM</div>
+        <div class="event-title">Drive SLC → Moab (~235 mi · 3.5–4 hrs)</div>
+        <div class="event-body"><p>Via I-15 S → US-6 E → I-70 E → US-191 S. ETA Moab ~9–9:30 PM.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Moab%2C+Utah" target="_blank">Directions to Moab</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">7:30 PM · ✅ RESERVATION CONFIRMED</div>
+        <div class="event-title">DINNER: Sabaku Sushi ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.5 TripAdvisor · 90 E Center St, Moab · Open Fri 5–9 PM (3 min from Hyatt)</p>
+          <p>Vegan chef freestyle rolls, agedashi tofu, edamame, vegan lemon curd dessert. Flies in fresh fish several times a week.</p>
+          <div class="reserve-badge">RESERVE NOW at sabakusushi.com — tiny, books up fast. Must be seated by 8:15 PM latest.</div>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Sultan Mediterranean (falafel/hummus, till 8 PM — tight with delays)</span>
+            <span class="tier tier-sos">SOS: Antica Forma (pizza, open till 10 PM)</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=90+E+Center+St%2C+Moab%2C+UT+84532" target="_blank">Directions to Sabaku Sushi</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event note">
+      <div class="event-card">
+        <div class="event-time">7:30 PM · Review Note</div>
+        <div class="event-title">Timing Risk on Friday</div>
+        <div class="event-body"><p>If SLC→Moab runs long (traffic/weather) and you arrive after 8 PM, Sabaku closes at 9 PM — must be seated by 8:15. Sultan (till 8 PM) is also tight. Antica Forma (till 10 PM) is the safe emergency.</p></div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">7:30 PM</div>
+        <div class="event-title">Check into Hyatt Place Moab · Early Sleep</div>
+        <div class="event-body"><p>Fuel the car tonight if possible — sets up early Arches start tomorrow. Set alarm for 6:15 AM.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 2 -->
+<div class="day-section" id="day2" style="--day-color: var(--d2)">
+  <div class="day-header">
+    <div class="day-number">D2</div>
+    <div class="day-title-block">
+      <h2>Saturday, Feb 28 — Arches National Park</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('moab')">🏨 Hyatt Place Moab · H-RP3GQ2DK247S</span>
+        <span class="day-badge">🌡 19/8°C</span>
+        <span class="day-badge">🚗 40–80 mi</span>
+        <span class="day-badge">🏜 Arches NP</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">6:15 AM</div>
+        <div class="event-title">BREAKFAST: Hotel Breakfast (fastest option)</div>
+        <div class="event-body"><p>Must be at Arches by 7 AM for parking. Speed over quality. Coffee + whatever's quick.</p>
+        <p class="note-text">⚠ Love Muffin Cafe removed — opens 6:30 AM but you can't afford the wait.</p></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">6:45–7:15 AM</div>
+        <div class="event-title">Drive to Arches NP Entrance (~10 min)</div>
+        <div class="event-body"><p>Buy/use <strong>America the Beautiful Pass</strong> at the gate — covers Arches, Bryce, Zion.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Arches+National+Park+Entrance%2C+Moab%2C+UT" target="_blank">Directions to Arches</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">7:15–9:30 AM</div>
+        <div class="event-title">Arches: Balanced Rock + Windows Area</div>
+        <div class="event-body"><p>Early = easy parking. Windows/Balanced Rock great in morning light. <strong>Keep walking minimal (ankle).</strong></p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=The+Windows+Trailhead%2C+Arches+National+Park%2C+UT" target="_blank">Windows Trailhead</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">9:30–11:00 AM</div>
+        <div class="event-title">Arches: Delicate Arch Lower Viewpoint</div>
+        <div class="event-body"><p><strong>Lower viewpoint ONLY</strong> — skip the full hike (ankle). Short walk from parking.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Delicate+Arch+Lower+Viewpoint%2C+Arches+National+Park%2C+UT" target="_blank">Delicate Arch Lower Viewpoint</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">11:30 AM–12:30 PM</div>
+        <div class="event-title">LUNCH: Quesadilla Mobilla ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.8 TripAdvisor · Food truck area, Main St, Moab</p>
+          <p>Custom veggie quesadilla. <strong>Accommodates Jain requests (no onion/garlic/potato).</strong> Go before noon to skip the line.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: 98 Center (sit-down, vegan pho)</span>
+            <span class="tier tier-sos">SOS: Packed wrap in car</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Quesadilla+Mobilla%2C+Moab%2C+UT" target="_blank">Directions to Quesadilla Mobilla</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">1:00–4:00 PM</div>
+        <div class="event-title">Moab Town Recovery + Rest</div>
+        <div class="event-body"><p>Rest the ankle. Browse Main St shops if feeling good. Hydrate.</p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">5:30 PM</div>
+        <div class="event-title">DINNER: Sultan Mediterranean Grill ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.5 Google · 574 N Main St (5 min from Hyatt) · Open Sat 12–8 PM</p>
+          <p>Falafel platter, hummus, baba ganoush, stuffed grape leaves, veggie kabobs, baklava. Quick service, generous portions. No reservation needed.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: 98 Center (vegan pho/banh mi, open Sat till 9 PM)</span>
+            <span class="tier tier-sos">SOS: Antica Forma (pizza, open till 10:30 PM)</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=574+N+Main+St%2C+Moab%2C+UT+84532" target="_blank">Directions to Sultan Mediterranean</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">8:00 PM</div>
+        <div class="event-title">Back to Hotel — Rest Ankle</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 3 -->
+<div class="day-section" id="day3" style="--day-color: var(--d3)">
+  <div class="day-header">
+    <div class="day-number">D3</div>
+    <div class="day-title-block">
+      <h2>Sunday, Mar 1 — Potash Road + Dead Horse Point</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('moab')">🏨 Hyatt Place Moab · H-RP3GQ2DK247S</span>
+        <span class="day-badge">🌡 23/10°C</span>
+        <span class="day-badge">🚗 70–120 mi</span>
+        <span class="day-badge">🌅 Dead Horse Point Sunset</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">8:15–8:45 AM</div>
+        <div class="event-title">Drive to Potash Road (~15 min)</div>
+        <div class="event-body"><p>Easy pullouts, river views, cliff petroglyphs. Softer morning light.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Potash+Road%2C+Moab%2C+UT" target="_blank">Directions to Potash Road</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">8:45–10:30 AM</div>
+        <div class="event-title">Potash Road Scenic Drive</div>
+        <div class="event-body"><p>Stay in the car mostly — pull over for photos. River + red cliff reflections. <strong>Great ankle day.</strong></p></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">10:30 AM</div>
+        <div class="event-title">Return to Moab (~15 min)</div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">11:30 AM–12:30 PM</div>
+        <div class="event-title">LUNCH: 98 Center ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.5+ avg · 98 E Center St (3 min from Hyatt) · Open Sun 11:30 AM–9 PM</p>
+          <p>Vegan pho, banh mi nachos, kimchi sides. Excellent mocktails. Locally sourced.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Quesadilla Mobilla</span>
+            <span class="tier tier-sos">SOS: City Market picnic (salad + fruit)</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=98+E+Center+St%2C+Moab%2C+UT+84532" target="_blank">Directions to 98 Center</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">12:30–4:00 PM</div>
+        <div class="event-title">Midday Rest at Hotel</div>
+        <div class="event-body"><p>Nap. Ice the ankle. Recovery window before sunset.</p></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">4:00 PM</div>
+        <div class="event-title">Drive to Dead Horse Point State Park (~35 min)</div>
+        <div class="event-body"><p><strong>Utah State Park fee — not covered by NPS pass.</strong></p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Dead+Horse+Point+State+Park%2C+UT" target="_blank">Directions to Dead Horse Point</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">4:30–6:00 PM</div>
+        <div class="event-title">Dead Horse Point Sunset</div>
+        <div class="event-body"><p>Arrive early for a good spot. <strong>Bring the folding stool</strong> — standing on uneven rocky ground with a sprained ankle is surprisingly uncomfortable.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Dead+Horse+Point+State+Park%2C+UT" target="_blank">Dead Horse Point</a></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">6:00 PM</div>
+        <div class="event-title">Drive Back to Moab (~35 min)</div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">7:00 PM</div>
+        <div class="event-title">DINNER: Antica Forma ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.3 Google · 267 N Main St · Open Sun 11 AM–10 PM</p>
+          <p>Wood-fired vegetariana pizza (vegan as-is, no cheese), salads, fresh ingredients.</p>
+          <p class="note-text">⚠ Original plan had 98 Center as both lunch AND dinner — fixed. 98 Center = lunch, Antica Forma = dinner.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Sultan Mediterranean (open Sun 12–8 PM — tight!)</span>
+            <span class="tier tier-sos">SOS: Thai Bella</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=267+N+Main+St%2C+Moab%2C+UT+84532" target="_blank">Directions to Antica Forma</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event critical">
+      <div class="event-card">
+        <div class="event-time">9:00 PM · CRITICAL PREP FOR DAY 4</div>
+        <div class="event-title">Pack the Car — Day 4 is a Food Desert</div>
+        <div class="event-body">
+          <p><strong>Pack the car tonight. Fuel up tonight.</strong></p>
+          <p>Buy snacks at <strong>City Market</strong> (425 S Main St, 1 min from Hyatt): fruit, granola bars, nuts, PB+crackers, water. Also stock your Emergency Car Food Kit.</p>
+          <p>You won't see real food until Bicknell (~2.5 hrs from Moab).</p>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=City+Market%2C+425+S+Main+St%2C+Moab%2C+UT+84532" target="_blank">Directions to City Market</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 4 -->
+<div class="day-section" id="day4" style="--day-color: var(--d4)">
+  <div class="day-header">
+    <div class="day-number">D4</div>
+    <div class="day-title-block">
+      <h2>Monday, Mar 2 — LONGEST DAY: Moab → Bryce</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('rubys')">🏨 Best Western Ruby's Inn · #589885</span>
+        <span class="day-badge warn">⚠ 350–420 mi · FOOD DESERT</span>
+        <span class="day-badge">🌡 Hanksville 21/3°C → Bryce 12/−4°C</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event critical">
+      <div class="event-card">
+        <div class="event-time">BEFORE DEPARTURE</div>
+        <div class="event-title">Route Locked in GPS: Moab → I-70 W → UT-24 S → Bicknell → UT-12 → Bryce</div>
+        <div class="event-body"><p>If you accidentally take I-70 all the way to US-89, you'll miss Bicknell entirely. Pack snacks. No real food until Bicknell (~2.5 hrs).</p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">6:00–6:30 AM</div>
+        <div class="event-title">BREAKFAST: Hotel Breakfast + Packed Extras</div>
+        <div class="event-body"><p>Eat at hotel. Grab your pre-packed snack box from the car cooler bag.</p></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">6:30–8:30 AM</div>
+        <div class="event-title">Depart Moab → I-70 West → UT-24 Junction</div>
+        <div class="event-body"><p>Head north on US-191 to I-70 W. ~1.5 hrs to UT-24 junction.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Bicknell%2C+UT+84715" target="_blank">Route to Bicknell</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">9:30–10:30 AM (Optional)</div>
+        <div class="event-title">Goblin Valley State Park</div>
+        <div class="event-body"><p>Quick photo stops only — 20–30 min. Don't linger. Utah State Park fee.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Goblin+Valley+State+Park%2C+UT" target="_blank">Directions to Goblin Valley</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">11:00 AM–12:00 PM</div>
+        <div class="event-title">LUNCH: Curry Pizza, Bicknell ⭐ KEY STOP</div>
+        <div class="event-body">
+          <p>4.6 Google · 125 N SR-24, Bicknell · Open Mon 11 AM–10 PM</p>
+          <p>Indian-fusion curry pizza: paneer tikka masala pizza, channa masala, garlic naan, mango lassi. Vegan crust available. <strong>Featured on Diners, Drive-Ins and Dives.</strong> Only real meal between Moab and Bryce.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Any cafe in Torrey/Bicknell</span>
+            <span class="tier tier-sos">SOS: Packed snack box from car</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=125+N+SR-24%2C+Bicknell%2C+UT+84715" target="_blank">Directions to Curry Pizza</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">12:00–1:30 PM</div>
+        <div class="event-title">Bicknell → UT-12 West → toward Bryce</div>
+        <div class="event-body"><p>Stunning drive through Red Canyon and Dixie National Forest.</p></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">1:30–2:30 PM</div>
+        <div class="event-title">Factory Butte (Roadside Photo Stop)</div>
+        <div class="event-body"><p>Pull over and photograph from the road. Don't hike in.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Factory+Butte%2C+UT" target="_blank">Factory Butte</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">2:30–5:00 PM</div>
+        <div class="event-title">Moonscape Overlook + Bentonite Hills</div>
+        <div class="event-body"><p><strong>ONLY IF BONE DRY.</strong> Late afternoon golden hour light is dramatically better. High-clearance SUV needed. <strong>Skip if ANY mud.</strong></p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Moonscape+Overlook%2C+Hanksville%2C+UT" target="_blank">Moonscape Overlook</a></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">5:00–7:30 PM</div>
+        <div class="event-title">Continue to Bryce via UT-12</div>
+        <div class="event-body"><p>Final push ~2–2.5 hrs. Arrive after dark.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Best+Western+Ruby%27s+Inn%2C+Bryce+Canyon+City%2C+UT" target="_blank">Directions to Ruby's Inn</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">7:30–8:30 PM</div>
+        <div class="event-title">DINNER: Ruby's Inn Buffet/Restaurant</div>
+        <div class="event-body">
+          <p>At your hotel — Best Western Ruby's Inn</p>
+          <p>Salad bar, pasta, sides, baked potatoes. Functional, not exciting. You'll be tired — this is fine.</p>
+          <p class="note-text">⚠ Stone Hearth's 2025 season opened March 14 — expect it closed (Mar 2). Ruby's is the realistic dinner.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-top">TOP: Stone Hearth Grille, Tropic — call (435) 679-8923 to check seasonal opening</span>
+            <span class="tier tier-sos">SOS: The Pizza Place (21 N Main, Tropic, 4.5★)</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Best+Western+Ruby%27s+Inn%2C+Bryce+Canyon+City%2C+UT" target="_blank">Directions to Ruby's Inn</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">9:00 PM</div>
+        <div class="event-title">Check into Ruby's Inn. Crash.</div>
+        <div class="event-body"><p>Pack lunch for tomorrow from the General Store if it's still open.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 5 -->
+<div class="day-section" id="day5" style="--day-color: var(--d5)">
+  <div class="day-header">
+    <div class="day-number">D5</div>
+    <div class="day-title-block">
+      <h2>Tuesday, Mar 3 — Bryce Canyon + Kodachrome Basin</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('rubys')">🏨 Best Western Ruby's Inn · #589885</span>
+        <span class="day-badge warn">⚠ 8,000 ft elevation · Icy paths</span>
+        <span class="day-badge">🌡 10/−4°C</span>
+        <span class="day-badge">🚗 50–110 mi</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">6:45–7:15 AM</div>
+        <div class="event-title">BREAKFAST: Ruby's Inn + Pack Lunch</div>
+        <div class="event-body"><p>Eat at hotel. <strong>Also grab food from Ruby's General Store for packed lunch</strong> — there is NOTHING near Kodachrome Basin.</p></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">7:15–7:45 AM</div>
+        <div class="event-title">Drive into Bryce Canyon NP (~5 min)</div>
+        <div class="event-body"><p>Use America the Beautiful Pass at entrance.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Bryce+Canyon+National+Park%2C+UT" target="_blank">Directions to Bryce Canyon</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">7:45–10:30 AM</div>
+        <div class="event-title">Bryce Amphitheater Viewpoints</div>
+        <div class="event-body">
+          <p>Sunrise Point, Sunset Point, Inspiration Point, Bryce Point — pick 2–4. Best light = early AM.</p>
+          <p>Bryce is at <strong>8,000 ft</strong> — cold + stiff ankle. <strong>Wear Yaktrax/ice cleats if icy.</strong></p>
+          <p>Bryce Point has a longer parking-lot-to-rim walk than Sunset Point — prioritize accordingly.</p>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Sunrise+Point%2C+Bryce+Canyon+National+Park%2C+UT" target="_blank">Sunrise Point Parking</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">10:30 AM</div>
+        <div class="event-title">Drive to Kodachrome Basin State Park (~30 min)</div>
+        <div class="event-body"><p>Utah State Park fee (not covered by NPS pass).</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Kodachrome+Basin+State+Park%2C+UT" target="_blank">Directions to Kodachrome Basin</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">11:00 AM–1:00 PM</div>
+        <div class="event-title">Kodachrome Basin</div>
+        <div class="event-body"><p>Quiet, excellent non-NPS scenery. Short photo stops. Low walking.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Kodachrome+Basin+State+Park%2C+UT" target="_blank">Kodachrome Basin</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">12:00 PM</div>
+        <div class="event-title">LUNCH: Packed Lunch (eat at Kodachrome picnic area)</div>
+        <div class="event-body">
+          <p>From Ruby's General Store. <strong>No restaurants anywhere near here.</strong></p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Something simple in Tropic on the way back</span>
+            <span class="tier tier-sos">SOS: Snacks + early dinner</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">1:30 PM</div>
+        <div class="event-title">Return toward Bryce via UT-12 (~30 min)</div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">3:00–5:00 PM</div>
+        <div class="event-title">Red Canyon Pullouts on UT-12</div>
+        <div class="event-body"><p>Late afternoon light. Beautiful red rock arches and formations visible from the road. Easy pullover stops.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Red+Canyon%2C+Dixie+National+Forest%2C+UT" target="_blank">Red Canyon</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">5:30–7:00 PM</div>
+        <div class="event-title">DINNER: Stone Hearth Grille (Tropic) ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.7 TripAdvisor · 1380 W Stone Canyon Ln, Tropic · Dinner 5–9:30 PM (15 min from Ruby's)</p>
+          <p>Cauliflower steaks with béarnaise, wild mushroom tartare, grilled artichoke with hollandaise. Fine dining with canyon sunset views.</p>
+          <div class="reserve-badge">CALL (435) 679-8923 one week before to confirm seasonal opening. Reserve if open.</div>
+          <p class="note-text">⚠ Likely closed (opens mid-March). Mentally prepare for Ruby's/Pizza Place dinner.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: The Pizza Place (Tropic, 4.5★, hand-tossed pizza)</span>
+            <span class="tier tier-sos">SOS: Ruby's Inn buffet</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=1380+W+Stone+Canyon+Ln%2C+Tropic%2C+UT+84776" target="_blank">Directions to Stone Hearth Grille</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">8:00 PM</div>
+        <div class="event-title">Back to Ruby's — Pack for Springdale Departure</div>
+        <div class="event-body"><p>Check weather for UT-12 drive tomorrow — can have mixed precipitation.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 6 -->
+<div class="day-section" id="day6" style="--day-color: var(--d6)">
+  <div class="day-header">
+    <div class="day-number">D6</div>
+    <div class="day-title-block">
+      <h2>Wednesday, Mar 4 — Drive to Springdale</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('springdaleBilt')">🏨 Hyatt Place Springdale · Bilt booking</span>
+        <span class="day-badge">🌡 Bryce 9/−4°C → Springdale 21/9°C</span>
+        <span class="day-badge">🚗 110–150 mi</span>
+        <span class="day-badge warn">⚠ No food for ~3 hrs on UT-12</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event critical">
+      <div class="event-card">
+        <div class="event-time">CRITICAL REMINDER</div>
+        <div class="event-title">NO FOOD on UT-12/US-89 between Bryce and Springdale (~3 hrs)</div>
+        <div class="event-body"><p>Eat a proper breakfast before leaving. Top up water bottles.</p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">8:00–8:45 AM</div>
+        <div class="event-title">BREAKFAST: Ruby's Inn (eat well — last meal for 3 hours)</div>
+        <div class="event-body"><p>Full breakfast. This is your fuel for the entire drive.</p></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">8:45 AM</div>
+        <div class="event-title">Depart Bryce → UT-12 W → US-89 S → UT-9 W → Springdale</div>
+        <div class="event-body"><p>~110–150 mi / 2.5–3.5 hrs. Scenic drive with 2–5 min photo stops along UT-12. Keep flexible due to weather.</p>
+        <p class="note-text">⚠ Kiva Koffeehouse removed — it's EAST on UT-12, opposite direction. 60+ mi detour. Also likely closed (seasonal).</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Hyatt+Place+Springdale%2C+Zion+National+Park" target="_blank">Route to Hyatt Springdale</a></div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">12:00–1:00 PM</div>
+        <div class="event-title">Arrive Springdale — Check into Hyatt Place</div>
+        <div class="event-body"><p>Rest. Explore Springdale town on foot if ankle OK. Everything is on one road (Zion Park Blvd). No shuttle in Zion yet — still self-drive.</p></div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">1:00–3:00 PM</div>
+        <div class="event-title">Rest / Light Town Stroll</div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">3:00 PM (Optional)</div>
+        <div class="event-title">Short Pa'rus Trail Walk</div>
+        <div class="event-body"><p>Paved, flat, river views. No shuttle needed. Turn around whenever ankle says so.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Pa%27rus+Trail%2C+Springdale%2C+UT" target="_blank">Directions to Pa'rus Trail</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">5:30–7:00 PM</div>
+        <div class="event-title">DINNER: Thai Sapa ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.6 Google · 145 Zion Park Blvd (3 min walk from Hyatt) · Open Wed</p>
+          <p>Pad Thai, green curry, Thai iced tea, papaya salad. Organic/non-GMO ingredients. Good portions, fair prices.</p>
+          <p class="note-text">⚠ Spotted Dog was original top pick — changed due to reduced winter Wed hours. Thai Sapa is reliable.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Oscar's Cafe (4.3+, big portions)</span>
+            <span class="tier tier-sos">SOS: Zion Pizza and Noodle Co (open daily)</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=145+Zion+Park+Blvd%2C+Springdale%2C+UT+84767" target="_blank">Directions to Thai Sapa</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">7:30 PM</div>
+        <div class="event-title">Back to Hotel — Early Rest</div>
+        <div class="event-body"><p>Fuel up car tonight for tomorrow's East Side drive.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 7 -->
+<div class="day-section" id="day7" style="--day-color: var(--d7)">
+  <div class="day-header">
+    <div class="day-number">D7</div>
+    <div class="day-title-block">
+      <h2>Thursday, Mar 5 — Zion East Side + Pa'rus</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('springdaleBilt')">🏨 Hyatt Place Springdale · Bilt booking</span>
+        <span class="day-badge">🌡 22/7°C</span>
+        <span class="day-badge">🚗 20–60 mi</span>
+        <span class="day-badge">⛰ East Side Tunnel Corridor</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">7:00–8:00 AM</div>
+        <div class="event-title">BREAKFAST: MeMe's Cafe ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.5 TripAdvisor · 975 Zion Park Blvd (5 min from Hyatt) · Open Thu</p>
+          <p>Veggie crepes, smoothie bowls, veggie paninis. Huge portions. <strong>Go early — popular after 9 AM.</strong></p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Deep Creek Coffee Co (quick coffee + pastry)</span>
+            <span class="tier tier-sos">SOS: Hotel breakfast</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=975+Zion+Park+Blvd%2C+Springdale%2C+UT+84767" target="_blank">Directions to MeMe's Cafe</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">8:00–8:30 AM</div>
+        <div class="event-title">Drive into Zion — East Side Tunnel Corridor</div>
+        <div class="event-body"><p>Morning light on the east side before traffic builds.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Zion-Mt.+Carmel+Highway%2C+Zion+National+Park%2C+UT" target="_blank">Directions to East Side</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">8:30–11:00 AM</div>
+        <div class="event-title">Zion East Side Pullouts + Tunnel Corridor</div>
+        <div class="event-body"><p>Pull over at viewpoints along Zion-Mt. Carmel Highway. <strong>Canyon Overlook only if ankle feels stable</strong> (uneven footing, drop-offs).</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Zion-Mt.+Carmel+Highway%2C+Zion+National+Park%2C+UT" target="_blank">East Side Tunnel Corridor</a></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">11:00 AM</div>
+        <div class="event-title">Return to Springdale (~20 min through tunnel)</div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">11:30 AM–12:30 PM</div>
+        <div class="event-title">LUNCH: Oscar's Cafe ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.3+ Google · 948 Zion Park Blvd (4 min from Hyatt) · Open Thu</p>
+          <p>Veggie burritos, salads, big portions. Easy and filling.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Zion Pizza and Noodle Co</span>
+            <span class="tier tier-sos">SOS: Sol Foods grocery picnic</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=948+Zion+Park+Blvd%2C+Springdale%2C+UT+84767" target="_blank">Directions to Oscar's Cafe</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">12:30–4:00 PM</div>
+        <div class="event-title">Midday Rest at Hotel</div>
+        <div class="event-body"><p>Rest ankle. Ice and elevate. <strong>Important — tomorrow is the most parking-sensitive day.</strong></p></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">4:00–5:30 PM</div>
+        <div class="event-title">Pa'rus Trail Short Paved Walk</div>
+        <div class="event-body"><p>Late afternoon/near-sunset light on the river. Flat, paved, easy. Turn around whenever.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Pa%27rus+Trail%2C+Zion+National+Park%2C+UT" target="_blank">Pa'rus Trailhead</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">6:00–7:30 PM</div>
+        <div class="event-title">DINNER: Thai Sapa or Spotted Dog (if confirmed open)</div>
+        <div class="event-body">
+          <p>145 Zion Park Blvd · Open Thu</p>
+          <p>Thai Sapa is reliable. If you want variety, call Spotted Dog (435-772-3244) day-of to confirm.</p>
+          <p class="note-text">⚠ Dulivia moved to Fri (Day 8) — it has conflicting Thu hours and Whiptail is CLOSED Thu in winter.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Zion Pizza and Noodle Co</span>
+            <span class="tier tier-sos">SOS: Oscar's Cafe</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=145+Zion+Park+Blvd%2C+Springdale%2C+UT+84767" target="_blank">Directions to Thai Sapa</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event critical">
+      <div class="event-card">
+        <div class="event-time">8:00 PM · PREP FOR TOMORROW</div>
+        <div class="event-title">Set Alarm for 5:45 AM</div>
+        <div class="event-body"><p>Day 8 = most parking-constrained day of the trip. Your early departure matters. Pack anything needed in the car tonight. <strong>Fuel up tonight.</strong></p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 8 -->
+<div class="day-section" id="day8" style="--day-color: var(--d8)">
+  <div class="day-header">
+    <div class="day-number">D8</div>
+    <div class="day-title-block">
+      <h2>Friday, Mar 6 — Zion Canyon + Dulivia ★ SPLURGE</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('springdaleChase')">🏨 Hyatt Place Springdale · #2389115891</span>
+        <span class="day-badge">🌡 21/6°C</span>
+        <span class="day-badge">🚗 20–50 mi</span>
+        <span class="day-badge warn">⚠ Early departure for parking</span>
+        <span class="day-badge star">★ Best dinner night</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">5:45–6:15 AM</div>
+        <div class="event-title">BREAKFAST: Deep Creek Coffee Co (fast)</div>
+        <div class="event-body">
+          <p>4.6 TripAdvisor · Near park entrance · Open Fri</p>
+          <p>Quick coffee + pastry. <strong>Speed matters — need to be in the canyon early for parking.</strong></p>
+          <div class="meal-tiers">
+            <span class="tier tier-sos">SOS: Hotel breakfast / pre-packed snack box</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Deep+Creek+Coffee+Co%2C+Springdale%2C+UT" target="_blank">Directions to Deep Creek Coffee</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">6:15–6:45 AM</div>
+        <div class="event-title">Drive into Zion Canyon (self-drive — no shuttle till Mar 7)</div>
+        <div class="event-body"><p>Go early to secure parking. Most parking-constrained day of the trip.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Zion+Canyon+Visitor+Center%2C+Springdale%2C+UT" target="_blank">Directions into Zion Canyon</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">7:00–9:30 AM</div>
+        <div class="event-title">Zion Lodge Area + Flat Short Stroll</div>
+        <div class="event-body"><p>Short walk around Zion Lodge if comfortable. Easy, relatively flat. Beautiful early AM canyon wall light.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Zion+Lodge%2C+Zion+National+Park%2C+UT" target="_blank">Zion Lodge</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">9:30–11:00 AM</div>
+        <div class="event-title">Riverside Walk (Partial)</div>
+        <div class="event-body"><p>Paved path. <strong>Turn around after 15–20 min</strong> — last section near the Narrows gets wet, sandy, uneven. Set a clear turnaround point for the ankle.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Temple+of+Sinawava%2C+Zion+National+Park%2C+UT" target="_blank">Temple of Sinawava Trailhead</a></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">11:00 AM</div>
+        <div class="event-title">Return to Springdale (~15 min) before parking gets chaotic</div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">11:30 AM–12:30 PM</div>
+        <div class="event-title">LUNCH: Zion Pizza and Noodle Co ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.3 Google · 868 Zion Park Blvd (5 min from Hyatt) · Open daily 11 AM–9 PM</p>
+          <p>Veggie pizza in a converted 1930s Mormon church. Unique atmosphere.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Oscar's Cafe</span>
+            <span class="tier tier-sos">SOS: Sol Foods grocery picnic</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=868+Zion+Park+Blvd%2C+Springdale%2C+UT+84767" target="_blank">Directions to Zion Pizza</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">12:30–5:00 PM</div>
+        <div class="event-title">Rest at Hotel — Recovery Afternoon</div>
+        <div class="event-body"><p>Ankle rest. Nap. Last real rest day.</p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">5:30–7:30 PM</div>
+        <div class="event-title">DINNER: Dulivia Ristorante Italiano ★ SPLURGE</div>
+        <div class="event-body">
+          <p>4.8 Google · 1149 Zion Park Blvd (<strong>NEXT DOOR to Hyatt — 1 min walk</strong>) · Open Fri 5–9 PM</p>
+          <p>Scratch-made pasta, butternut squash ravioli, fresh bread, gelato, tiramisu. Mountain sunset views from patio. Zion Canyon's first scratch Italian restaurant.</p>
+          <div class="reserve-badge">RESERVE: Call (435) 772-3700 or book via OpenTable — mandatory.</div>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Whiptail Grill (open Fri 3–8 PM, chile relleno, enchiladas)</span>
+            <span class="tier tier-sos">SOS: Spotted Dog</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=1149+Zion+Park+Blvd%2C+Springdale%2C+UT+84767" target="_blank">Directions to Dulivia</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">8:00 PM</div>
+        <div class="event-title">Evening Town Stroll + Pack for Departure</div>
+        <div class="event-body"><p>Last night in Springdale. Tomorrow: Snow Canyon + Las Vegas.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 9 -->
+<div class="day-section" id="day9" style="--day-color: var(--d9)">
+  <div class="day-header">
+    <div class="day-number">D9</div>
+    <div class="day-title-block">
+      <h2>Saturday, Mar 7 — Snow Canyon → Las Vegas ✈</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel">✈ 11:55 PM flight from LAS</span>
+        <span class="day-badge">🌡 Springdale 22/8°C → LAS 24/12°C</span>
+        <span class="day-badge">🚗 220–280 mi</span>
+        <span class="day-badge final">🏁 Final Day</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">8:00–9:00 AM</div>
+        <div class="event-title">BREAKFAST: MeMe's Cafe ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.5 TripAdvisor · 975 Zion Park Blvd · Open Sat</p>
+          <p>Veggie crepes, smoothie bowls. No rush today — relaxed departure.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Oscar's Cafe</span>
+            <span class="tier tier-sos">SOS: Deep Creek Coffee + snack</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=975+Zion+Park+Blvd%2C+Springdale%2C+UT+84767" target="_blank">Directions to MeMe's</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">9:00–9:30 AM</div>
+        <div class="event-title">Check out of Hyatt Place Springdale — Load Car</div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">9:30 AM</div>
+        <div class="event-title">Depart Springdale → UT-9 W → I-15 S → Snow Canyon (~1 hr)</div>
+        <div class="event-body">
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Snow+Canyon+State+Park%2C+Ivins%2C+UT" target="_blank">Route to Snow Canyon</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">10:30 AM–1:00 PM</div>
+        <div class="event-title">Snow Canyon State Park</div>
+        <div class="event-body"><p>Utah State Park fee. Easy road access, low walking required. Stick to paved pullouts and short Whiptail Trail if ankle still tender. Petrified sand dunes = uneven slickrock — <strong>ankle-dependent.</strong></p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Snow+Canyon+State+Park%2C+Ivins%2C+UT" target="_blank">Directions to Snow Canyon</a></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">1:00 PM</div>
+        <div class="event-title">Drive to St. George for Lunch (~15 min)</div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">1:30–2:30 PM</div>
+        <div class="event-title">LUNCH: Gaia's Garden Cafe, St. George ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>Fully vegan · St. George · Sat</p>
+          <p>Vegan comfort food. <strong>Fully vegan place — imitation products OK per your rules.</strong></p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Viva Chicken (929 W Sunset Blvd, St. George, 4.5+ Google — veg rice bowls/salads/plantains)</span>
+            <span class="tier tier-sos">SOS: Grocery picnic</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Gaia%27s+Garden+Cafe%2C+St.+George%2C+UT" target="_blank">Directions to Gaia's Garden</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">2:30–5:30 PM (Optional)</div>
+        <div class="event-title">Return to Snow Canyon for Golden Hour</div>
+        <div class="event-body"><p>Best light = 1–2 hrs before sunset. Excellent final payoff. Otherwise head toward Vegas.</p></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">5:30 PM</div>
+        <div class="event-title">Depart for Las Vegas (~120 mi via I-15 S · ~2 hrs)</div>
+        <div class="event-body"><p>Aim to arrive LAS area by 7:30–8:00 PM.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Harry+Reid+International+Airport%2C+Las+Vegas%2C+NV" target="_blank">Route to LAS Airport</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">7:30–8:30 PM</div>
+        <div class="event-title">DINNER: Indian Restaurant near LAS Airport ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>Search "Indian restaurant near Las Vegas airport" on Google Maps when 60 min out.</p>
+          <p>Several excellent options on S Maryland Pkwy, 10 min from LAS. Dal, paneer, naan, biryani. Pick the highest-rated with current availability.</p>
+          <p class="note-text">⚠ Tacotarian/Crossroads Kitchen changed — both are 15–25 min from LAS in traffic. With 11:55 PM flight, must be at LAS by ~9:30 PM.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Tacotarian (vegan, Strip area, if time permits)</span>
+            <span class="tier tier-sos">SOS: Airport food</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Indian+restaurant+near+Las+Vegas+McCarran+airport" target="_blank">Search Indian near LAS</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">9:00–9:30 PM</div>
+        <div class="event-title">Arrive LAS Airport — Return Rental Car</div>
+        <div class="event-body"><p>Drop car, shuttle to terminal, check in. <strong>Must be at LAS by ~9:30 PM for 11:55 PM flight.</strong></p></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">11:55 PM</div>
+        <div class="event-title">✈ Flight Departs — Trip Complete. You did it.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /tab-relaxing -->
+
+<div id="tab-exciting" class="tab-pane active">
+
+<!-- DAY 1 -->
+<div class="day-section" id="e-day1" style="--day-color: var(--d1)">
+  <div class="day-header">
+    <div class="day-number">D1</div>
+    <div class="day-title-block">
+      <h2>SLC → Moab</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('moab')">🏨 Hyatt Place Moab · H-RP3GQ2DK247S</span>
+        <span class="day-badge">🌡 18/4°C</span>
+        <span class="day-badge">🚗 ~235 mi</span>
+        <span class="day-badge">📅 Friday Feb 27</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event critical">
+      <div class="event-card">
+        <div class="event-time">3:05 PM · Flight</div>
+        <div class="event-title">Land at SLC — AA 1456 (Conf: KWRWCX)</div>
+        <div class="event-body"><p>Bags arrive ~3:30 PM. Budget car pickup at 3974 W 500 N SLC from 5:00 PM. Depart ~5:15 PM → Moab ~9–9:30 PM. Sabaku 7:30 PM reservation may need to push to 8 PM — call ahead if running late.</p></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">5:15 PM</div>
+        <div class="event-title">Drive SLC → Moab (~235 mi, 3.5–4 hrs)</div>
+        <div class="event-body"><p>Route: I-15 S → US-6 E → I-70 E → US-191 S. ETA Moab ~9–9:30 PM.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Moab%2C%20Utah" target="_blank">Directions to Moab</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">7:30 PM</div>
+        <div class="event-title">DINNER: Sabaku Sushi ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.5 TripAdvisor · 90 E Center St, Moab · Open Fri 5–9 PM (3 min from Hyatt)</p>
+          <p>Vegan chef freestyle rolls, agedashi tofu, edamame, vegan lemon curd dessert. Flies in fresh fish several times a week. Reservation CONFIRMED at 7:30 PM, 2 guests.</p>
+          <div class="reserve-badge">RESERVE NOW at sabakusushi.com — tiny, books up fast. Must be seated by 8:15 PM latest.</div>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Sultan Mediterranean (falafel/hummus, till 8 PM — tight with delays)</span>
+            <span class="tier tier-sos">SOS: Antica Forma (pizza, open till 10 PM)</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=90%20E%20Center%20St%2C%20Moab%2C%20UT%2084532" target="_blank">Directions to Sabaku Sushi</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event note">
+      <div class="event-card">
+        <div class="event-time">7:30 PM · Note</div>
+        <div class="event-title">Timing Risk on Friday</div>
+        <div class="event-body"><p>If SLC→Moab runs long and you arrive after 8 PM, Sabaku closes at 9 PM. Sultan (till 8 PM) also tight. Antica Forma (till 10 PM) is the safe emergency option.</p></div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">7:30 PM</div>
+        <div class="event-title">Check into Hyatt Place Moab</div>
+        <div class="event-body"><p>Fuel the car tonight. Set alarm for 6:15 AM.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 2 -->
+<div class="day-section" id="e-day2" style="--day-color: var(--d2)">
+  <div class="day-header">
+    <div class="day-number">D2</div>
+    <div class="day-title-block">
+      <h2>Arches + Delicate Arch Full Hike</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('moab')">🏨 Hyatt Place Moab · H-RP3GQ2DK247S</span>
+        <span class="day-badge">🌡 19/8°C</span>
+        <span class="day-badge">🚗 40–80 mi</span>
+        <span class="day-badge">📅 Saturday Feb 28</span>
+        <span class="day-badge">★ Delicate Arch Full Hike</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">6:15 AM</div>
+        <div class="event-title">BREAKFAST: Hotel Breakfast (fastest option)</div>
+        <div class="event-body">
+          <p>Hyatt Place Moab · Open early</p>
+          <p>Must be at Arches by 7 AM. Speed over quality. Love Muffin removed — opens 6:30 AM but can't afford the wait.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-sos">SOS: Grab something to-go from lobby</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">6:45–7:15 AM</div>
+        <div class="event-title">Drive to Arches NP Entrance (~10 min)</div>
+        <div class="event-body"><p>Use America the Beautiful Pass. Early arrival = easy parking.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Arches%20National%20Park%20Entrance%2C%20Moab%2C%20UT" target="_blank">Directions to Arches Entrance</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">7:15–9:30 AM</div>
+        <div class="event-title">Arches: Balanced Rock + Windows Area</div>
+        <div class="event-body"><p>Early = easy parking. Windows/Balanced Rock great in morning light. Double Arch and Turret Arch — short walks, excellent formations.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=The+Windows+Trailhead%2C+Arches+National+Park%2C+UT" target="_blank">Windows Trailhead</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">9:30 AM–12:00 PM</div>
+        <div class="event-title">Arches: Delicate Arch — FULL HIKE ★★★</div>
+        <div class="event-body"><p>UPGRADED from lower viewpoint. 3 mi round trip, ~480 ft elevation gain, 1.5–2.5 hrs. The iconic Utah shot. Bring 1L water minimum. Exposed with no shade — morning is ideal. Rock scrambling section near the top.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Delicate+Arch+Trailhead%2C+Arches+National+Park%2C+UT" target="_blank">Delicate Arch Trailhead</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">12:30–1:30 PM</div>
+        <div class="event-title">LUNCH: Quesadilla Mobilla ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.8 TripAdvisor · Food truck area, Main St, Moab</p>
+          <p>Custom veggie quesadilla. Accommodates Jain requests (no onion/garlic/potato). Go before noon to skip the line.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: 98 Center (sit-down, vegan pho)</span>
+            <span class="tier tier-sos">SOS: Packed wrap in car</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Quesadilla%20Mobilla%2C%20Moab%2C%20UT" target="_blank">Directions to Quesadilla Mobilla</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">1:30–4:00 PM</div>
+        <div class="event-title">Moab Town Recovery + Rest</div>
+        <div class="event-body"><p>Browse Main St shops. Hydrate well after Delicate Arch hike.</p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">5:30 PM</div>
+        <div class="event-title">DINNER: Sultan Mediterranean Grill ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.5 Google · 574 N Main St (5 min from Hyatt) · Open Sat 12–8 PM</p>
+          <p>Falafel platter, hummus, baba ganoush, stuffed grape leaves, veggie kabobs, baklava. Quick service, generous portions. No reservation needed.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: 98 Center (vegan pho/banh mi, open Sat till 9 PM)</span>
+            <span class="tier tier-sos">SOS: Antica Forma (pizza, open till 10:30 PM)</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=574%20N%20Main%20St%2C%20Moab%2C%20UT%2084532" target="_blank">Directions to Sultan Mediterranean</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">8:00 PM</div>
+        <div class="event-title">Back to Hotel — Rest</div>
+        <div class="event-body"><p>Rest after big hiking day.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 3 -->
+<div class="day-section" id="e-day3" style="--day-color: var(--d3)">
+  <div class="day-header">
+    <div class="day-number">D3</div>
+    <div class="day-title-block">
+      <h2>Potash Road + Dead Horse Point</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('moab')">🏨 Hyatt Place Moab · H-RP3GQ2DK247S</span>
+        <span class="day-badge">🌡 23/10°C</span>
+        <span class="day-badge">🚗 70–120 mi</span>
+        <span class="day-badge">📅 Sunday Mar 1</span>
+        <span class="day-badge">🌅 Dead Horse Point + Full Rim Trail</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">8:15–8:45 AM</div>
+        <div class="event-title">Drive to Potash Road (~15 min)</div>
+        <div class="event-body"><p>Easy pullouts, river views, cliff petroglyphs. Softer morning light.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Potash%20Road%2C%20Moab%2C%20UT" target="_blank">Directions to Potash Road</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">8:45–10:30 AM</div>
+        <div class="event-title">Potash Road Scenic Drive</div>
+        <div class="event-body"><p>Pull over for photos. Colorado River + red cliff reflections. Petroglyphs along the road. Optional: Corona Arch Trail (short walk to trailhead for photos, or full 3 mi RT hike if you want more adventure).</p></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">10:30 AM</div>
+        <div class="event-title">Return to Moab (~15 min)</div>
+        <div class="event-body"><p>Head back to town for lunch.</p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">11:30 AM–12:30 PM</div>
+        <div class="event-title">LUNCH: 98 Center ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.5+ avg · 98 E Center St (3 min from Hyatt) · Open Sun 11:30 AM–9 PM</p>
+          <p>Vegan pho, banh mi nachos, kimchi sides. Excellent mocktails. Locally sourced.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Quesadilla Mobilla</span>
+            <span class="tier tier-sos">SOS: City Market picnic (salad + fruit)</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=98%20E%20Center%20St%2C%20Moab%2C%20UT%2084532" target="_blank">Directions to 98 Center</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">12:30–4:00 PM</div>
+        <div class="event-title">Midday Rest at Hotel</div>
+        <div class="event-body"><p>Nap. Recovery window before sunset drive. Hydrate.</p></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">4:00 PM</div>
+        <div class="event-title">Drive to Dead Horse Point State Park (~35 min)</div>
+        <div class="event-body"><p>Utah State Park fee — not covered by NPS pass.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Dead%20Horse%20Point%20State%20Park%2C%20UT" target="_blank">Directions to Dead Horse Point</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">4:30–6:00 PM</div>
+        <div class="event-title">Dead Horse Point Sunset ★ — Full Rim Trail</div>
+        <div class="event-body"><p>Arrive early. UPGRADED: Walk the entire rim trail loop — stunning 270° views of the Colorado River gooseneck. Bring warm layers, gets cold fast after sundown.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Dead+Horse+Point+State+Park%2C+UT" target="_blank">Dead Horse Point</a></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">6:00 PM</div>
+        <div class="event-title">Drive Back to Moab (~35 min)</div>
+        <div class="event-body"><p>Head back for dinner.</p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">7:00 PM</div>
+        <div class="event-title">DINNER: Antica Forma ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.3 Google · 267 N Main St · Open Sun 11 AM–10 PM</p>
+          <p>Wood-fired vegetariana pizza (vegan as-is, no cheese), salads, fresh ingredients.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Sultan Mediterranean (open Sun 12–8 PM — tight!)</span>
+            <span class="tier tier-sos">SOS: Thai Bella</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=267%20N%20Main%20St%2C%20Moab%2C%20UT%2084532" target="_blank">Directions to Antica Forma</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event critical">
+      <div class="event-card">
+        <div class="event-time">9:00 PM · CRITICAL</div>
+        <div class="event-title">Pack the Car — Day 4 is a Food Desert</div>
+        <div class="event-body"><p>Pack the car tonight. Fuel up tonight. Buy snacks at City Market (425 S Main St, 1 min from Hyatt): fruit, granola bars, nuts, PB+crackers, water. You won't see real food until Bicknell (~2.5 hrs from Moab).
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=City%20Market%2C%20425%20S%20Main%20St%2C%20Moab%2C%20UT%2084532" target="_blank">Directions to City Market</a></p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 4 -->
+<div class="day-section" id="e-day4" style="--day-color: var(--d4)">
+  <div class="day-header">
+    <div class="day-number">D4</div>
+    <div class="day-title-block">
+      <h2>Moab → Bryce Canyon (350–420 mi · Food Desert)</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('rubys')">🏨 Best Western Ruby's Inn · #589885</span>
+        <span class="day-badge">🌡 Hanksville 21/3°C → Bryce 12/−4°C</span>
+        <span class="day-badge">🚗 350–420 mi</span>
+        <span class="day-badge">📅 Monday Mar 2</span>
+        <span class="day-badge">⚠ 350–420 mi · FOOD DESERT</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event critical">
+      <div class="event-card">
+        <div class="event-time">Today · CRITICAL</div>
+        <div class="event-title">LONGEST DAY — FOOD DESERT — Pack Everything</div>
+        <div class="event-body"><p>LONGEST DAY. FOOD DESERT. Pack snacks. Lock route in GPS now: Moab → I-70 W → UT-24 S → Bicknell (lunch) → UT-12 → Bryce.</p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">6:00–6:30 AM</div>
+        <div class="event-title">BREAKFAST: Hotel Breakfast + Packed Extras</div>
+        <div class="event-body">
+          <p>Hyatt Place Moab · Open early</p>
+          <p>Eat at hotel. Grab pre-packed snack box from car cooler bag. Love Muffin removed — 6:30 AM departure means it won't help.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-sos">SOS: Snack box in car</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">6:30–7:00 AM</div>
+        <div class="event-title">Depart Moab → I-70 West</div>
+        <div class="event-body"><p>Head north on US-191 to I-70 W. ~1.5 hrs to UT-24 junction.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=I-70%20West%20from%20Moab" target="_blank">Directions to I-70 West</a></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">8:30 AM</div>
+        <div class="event-title">Turn South on UT-24 toward Capitol Reef</div>
+        <div class="event-body"><p>Scenic drive through desert canyons.</p></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">9:30–10:30 AM</div>
+        <div class="event-title">(Optional) Goblin Valley State Park</div>
+        <div class="event-body"><p>Quick photo stops, 20–30 min, or explore valley floor — scrambling around the goblins takes ~45 min. Utah State Park fee. Maps: Goblin Valley State Park, UT.
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Goblin%20Valley%20State%20Park%2C%20UT" target="_blank">Directions to Goblin Valley</a></p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">11:00 AM–12:00 PM</div>
+        <div class="event-title">LUNCH: Curry Pizza (Bicknell) ★ KEY STOP</div>
+        <div class="event-body">
+          <p>4.6 Google · 125 N SR-24, Bicknell · Open Mon 11 AM–10 PM</p>
+          <p>Indian-fusion curry pizza: paneer tikka masala pizza, channa masala, garlic naan, mango lassi. Vegan crust available. Featured on Diners, Drive-Ins and Dives. This is your only real meal between Moab and Bryce. ROUTE NOTE: Bicknell is on UT-24. If you accidentally take I-70 all the way to US-89, you'll miss it entirely.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Any cafe in Torrey/Bicknell</span>
+            <span class="tier tier-sos">SOS: Packed lunch from snack box</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=125%20N%20SR-24%2C%20Bicknell%2C%20UT" target="_blank">Directions to Curry Pizza</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">12:00–1:30 PM</div>
+        <div class="event-title">Drive Bicknell → UT-12 West → toward Bryce</div>
+        <div class="event-body"><p>Stunning drive through Red Canyon and Dixie National Forest.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Bryce%20Canyon%20City%2C%20UT" target="_blank">Directions to Bryce Canyon City</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">1:30–2:30 PM</div>
+        <div class="event-title">Factory Butte Roadside Photo Stop</div>
+        <div class="event-body"><p>Pull over, photograph from road or walk out onto terrain.
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Factory%20Butte%2C%20UT" target="_blank">Directions to Factory Butte</a></p></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">2:30–5:00 PM</div>
+        <div class="event-title">Moonscape Overlook + Bentonite Hills (ONLY IF BONE DRY)</div>
+        <div class="event-body"><p>Late afternoon golden hour = dramatic lighting. High-clearance SUV strongly preferred. Skip if ANY mud.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Moonscape+Overlook%2C+Hanksville%2C+UT" target="_blank">Moonscape Overlook</a></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">5:00–7:30 PM</div>
+        <div class="event-title">Continue to Bryce via UT-12 — Final Push</div>
+        <div class="event-body"><p>~2–2.5 hrs. Arrive Bryce after dark.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Best+Western+Ruby%27s+Inn%2C+Bryce+Canyon+City%2C+UT" target="_blank">Directions to Ruby's Inn</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">7:30–8:30 PM</div>
+        <div class="event-title">DINNER: Ruby's Inn Restaurant (at hotel)</div>
+        <div class="event-body">
+          <p>Best Western Ruby's Inn · Bryce Canyon City</p>
+          <p>Salad bar, pasta, sides, baked potatoes. Functional, not exciting — you'll be tired. Stone Hearth Grille (Tropic) almost certainly CLOSED (2025 season opened Mar 14). CALL (435) 679-8923 to check.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-sos">SOS: The Pizza Place (21 N Main, Tropic, 4.5 rating)</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Best+Western+Ruby%27s+Inn%2C+Bryce+Canyon+City%2C+UT" target="_blank">Directions to Ruby's Inn</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">9:00 PM</div>
+        <div class="event-title">Check into Ruby's Inn. Crash.</div>
+        <div class="event-body"><p>Pack lunch for tomorrow from the General Store if open.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 5 -->
+<div class="day-section" id="e-day5" style="--day-color: var(--d5)">
+  <div class="day-header">
+    <div class="day-number">D5</div>
+    <div class="day-title-block">
+      <h2>Bryce Canyon + Navajo Loop</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('rubys')">🏨 Best Western Ruby's Inn · #589885</span>
+        <span class="day-badge">🌡 10/−4°C</span>
+        <span class="day-badge">🚗 50–110 mi</span>
+        <span class="day-badge">📅 Tuesday Mar 3</span>
+        <span class="day-badge">★ Navajo Loop / Queen's Garden</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">6:45–7:15 AM</div>
+        <div class="event-title">BREAKFAST: Ruby's Inn + General Store Packed Lunch</div>
+        <div class="event-body">
+          <p>Best Western Ruby's Inn · Bryce Canyon City</p>
+          <p>Also grab food from Ruby's General Store for packed lunch — NOTHING near Kodachrome Basin.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-sos">SOS: Snack bar at Ruby's</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">7:15–7:45 AM</div>
+        <div class="event-title">Drive into Bryce Canyon NP (~5 min)</div>
+        <div class="event-body"><p>Use America the Beautiful Pass.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Bryce%20Canyon%20National%20Park%20Entrance%2C%20UT" target="_blank">Directions to Bryce Canyon NP</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">7:45–10:30 AM</div>
+        <div class="event-title">Bryce Canyon — Navajo Loop / Queen's Garden Combo Hike ★★</div>
+        <div class="event-body"><p>UPGRADED from viewpoints only. Start at Sunrise Point. Navajo Loop → Queen's Garden combo (2.9 mi, ~2 hrs, descends 550 ft into the hoodoo amphitheater). The #1 rated hike in Bryce. Wear layers — Bryce is at 8,000 ft and cold in AM. Yaktrax/ice cleats if icy on rim paths.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Sunrise+Point%2C+Bryce+Canyon+National+Park%2C+UT" target="_blank">Sunrise Point Trailhead</a></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">10:30 AM</div>
+        <div class="event-title">Drive to Kodachrome Basin State Park (~30 min)</div>
+        <div class="event-body"><p>Utah State Park fee.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Kodachrome%20Basin%20State%20Park%2C%20UT" target="_blank">Directions to Kodachrome Basin</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">11:00 AM–1:00 PM</div>
+        <div class="event-title">Kodachrome Basin — Angel's Palace Trail ★</div>
+        <div class="event-body"><p>UPGRADED from photo stops. Short Angel's Palace Trail (1.5 mi loop, moderate) for panoramic views. Quiet, excellent non-NPS scenery.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Kodachrome+Basin+State+Park%2C+UT" target="_blank">Kodachrome Basin</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">12:00 PM</div>
+        <div class="event-title">LUNCH at Kodachrome — PACKED LUNCH</div>
+        <div class="event-body">
+          <p>Kodachrome Basin State Park Picnic Area</p>
+          <p>Eat your packed lunch from Ruby's General Store at the picnic area.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Something simple in Tropic on way back</span>
+            <span class="tier tier-sos">SOS: Snacks + early dinner</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">1:30 PM</div>
+        <div class="event-title">Return toward Bryce via UT-12 (~30 min)</div>
+        <div class="event-body"><p>Head back for afternoon activities.</p></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">3:00–5:00 PM</div>
+        <div class="event-title">Red Canyon Pullouts + Optional Red Canyon Arches Trail ★</div>
+        <div class="event-body"><p>Late afternoon light. Beautiful red rock arches and formations. Optional: Red Canyon Arches Trail (0.7 mi) for closer look.
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Red%20Canyon%2C%20Dixie%20National%20Forest%2C%20UT" target="_blank">Directions to Red Canyon</a></p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">5:30–7:00 PM</div>
+        <div class="event-title">DINNER: Stone Hearth Grille (Tropic) ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.7 TripAdvisor · 1380 W Stone Canyon Ln, Tropic (15 min from Ruby's) · Dinner 5–9:30 PM</p>
+          <p>Cauliflower steaks with béarnaise, wild mushroom tartare, grilled artichoke with hollandaise. Fine dining, canyon sunset views. CALL (435) 679-8923 one week before to confirm seasonal opening. Reserve if open.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: The Pizza Place (Tropic, 4.5, hand-tossed pizza)</span>
+            <span class="tier tier-sos">SOS: Ruby's Inn buffet</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=1380%20W%20Stone%20Canyon%20Ln%2C%20Tropic%2C%20UT" target="_blank">Directions to Stone Hearth Grille</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">8:00 PM</div>
+        <div class="event-title">Pack for Tomorrow's Departure to Springdale</div>
+        <div class="event-body"><p>Check weather for UT-12 drive.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 6 -->
+<div class="day-section" id="e-day6" style="--day-color: var(--d6)">
+  <div class="day-header">
+    <div class="day-number">D6</div>
+    <div class="day-title-block">
+      <h2>Drive to Springdale + Zion Arrival</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('springdaleBilt')">🏨 Hyatt Place Springdale · Bilt booking</span>
+        <span class="day-badge">🌡 Bryce AM 9/−4°C → Springdale PM 21/9°C</span>
+        <span class="day-badge">🚗 110–150 mi</span>
+        <span class="day-badge">📅 Wednesday Mar 4</span>
+        <span class="day-badge">⚠ No food on UT-12 (~3 hrs)</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event critical">
+      <div class="event-card">
+        <div class="event-time">Today · CRITICAL</div>
+        <div class="event-title">No Food on UT-12/US-89 Between Bryce and Springdale (~3 hrs)</div>
+        <div class="event-body"><p>Eat well before leaving Ruby's Inn. Top up water bottles.</p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">8:00–8:45 AM</div>
+        <div class="event-title">BREAKFAST: Ruby's Inn (eat well — last meal for 3 hours)</div>
+        <div class="event-body">
+          <p>Best Western Ruby's Inn · Bryce Canyon City</p>
+          <p>Fuel for entire drive. Top up water bottles.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-sos">SOS: Snack box in car</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">8:45–9:30 AM</div>
+        <div class="event-title">Depart Bryce → Springdale (~110–150 mi / 2.5–3.5 hrs)</div>
+        <div class="event-body"><p>Route: UT-12 West → US-89 South → UT-9 West → Springdale. Scenic drive with 2–5 min photo stops along UT-12. Note: Kiva Koffeehouse removed — it's EAST on UT-12 (60+ mi round-trip detour, likely closed in early March).</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Springdale%2C%20UT" target="_blank">Directions to Springdale</a></div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">12:00–1:00 PM</div>
+        <div class="event-title">Arrive Springdale + Check In</div>
+        <div class="event-body"><p>Check into Hyatt Place Springdale. Explore Springdale town on foot — everything on one road (Zion Park Blvd).</p></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">1:00–3:00 PM</div>
+        <div class="event-title">Rest / Light Town Stroll</div>
+        <div class="event-body"><p>Recover from the long drive. Walk Zion Park Blvd.</p></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">3:00–5:00 PM</div>
+        <div class="event-title">Pa'rus Trail + Watchman Trail ★ UPGRADED</div>
+        <div class="event-body"><p>Pa'rus is paved, flat (3.5 mi RT). If energy good: Watchman Trail (3.3 mi RT, 370 ft gain) offers great views of the Watchman and Zion Canyon. No shuttle needed for either. Fuel up car tonight for tomorrow's East Side drive.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Pa%27rus+Trail%2C+Zion+National+Park%2C+UT" target="_blank">Pa'rus / Watchman Trailhead</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">5:30–7:00 PM</div>
+        <div class="event-title">DINNER: Thai Sapa ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.6 Google · 145 Zion Park Blvd (3 min walk from Hyatt) · Wed open</p>
+          <p>Pad Thai, green curry, Thai iced tea, papaya salad. Organic/non-GMO ingredients.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Oscar's Cafe (4.3+, big portions)</span>
+            <span class="tier tier-sos">SOS: Zion Pizza and Noodle Co (open daily)</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=145%20Zion%20Park%20Blvd%2C%20Springdale%2C%20UT%2084767" target="_blank">Directions to Thai Sapa</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">7:30 PM</div>
+        <div class="event-title">Back to Hotel + Fuel Up Car</div>
+        <div class="event-body"><p>Early rest. Fuel up car tonight.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 7 -->
+<div class="day-section" id="e-day7" style="--day-color: var(--d7)">
+  <div class="day-header">
+    <div class="day-number">D7</div>
+    <div class="day-title-block">
+      <h2>ANGEL'S LANDING DAY ★★★</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('springdaleBilt')">🏨 Hyatt Place Springdale · Bilt booking</span>
+        <span class="day-badge">🌡 22/7°C</span>
+        <span class="day-badge">🚗 20–60 mi</span>
+        <span class="day-badge">📅 Thursday Mar 5</span>
+        <span class="day-badge">⭐ Angel's Landing · 9 AM Permit</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event critical">
+      <div class="event-card">
+        <div class="event-time">Today · CRITICAL ALERT</div>
+        <div class="event-title">ANGEL'S LANDING PERMIT: 9:00 AM</div>
+        <div class="event-body"><p>Be at the trailhead by 8:30 AM. This is the highlight of the trip.</p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">6:30–7:15 AM</div>
+        <div class="event-title">BREAKFAST: MeMe's Cafe ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.5 TripAdvisor · 975 Zion Park Blvd (5 min from Hyatt) · Open Thu</p>
+          <p>Veggie crepes, smoothie bowls, veggie paninis. Huge portions. Go early — popular after 9 AM. Fuel up well for Angel's Landing.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Deep Creek Coffee Co (quick coffee + pastry)</span>
+            <span class="tier tier-sos">SOS: Hotel breakfast</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=975%20Zion%20Park%20Blvd%2C%20Springdale%2C%20UT%2084767" target="_blank">Directions to MeMe's Cafe</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">7:15–7:45 AM</div>
+        <div class="event-title">Drive into Zion Canyon (self-drive — no shuttle till Mar 7)</div>
+        <div class="event-body"><p>Go early to secure parking near Grotto trailhead.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Grotto%20Trailhead%2C%20Zion%20National%20Park%2C%20UT" target="_blank">Directions to Grotto Trailhead</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">8:00–8:30 AM</div>
+        <div class="event-title">Zion East Side Quick Pullouts</div>
+        <div class="event-body"><p>Quick photo stops at best viewpoints along Zion-Mt. Carmel Highway on the way in. Don't linger — save energy for Angel's Landing.</p></div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">8:30 AM</div>
+        <div class="event-title">Arrive at Grotto / Angel's Landing Trailhead</div>
+        <div class="event-body"><p>Park and get ready. Bring 1.5–2L water, snacks, and layers. Gloves recommended for the chain section.</p></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">9:00 AM–12:30 PM</div>
+        <div class="event-title">ANGEL'S LANDING ★★★ (Permit: 9 AM)</div>
+        <div class="event-body"><p>5.4 mi round trip, ~1,488 ft elevation gain, 3–4 hrs. Trail: West Rim Trail → Refrigerator Canyon → Walter's Wiggles (21 switchbacks) → Scout Lookout → chain section to summit. The final 0.5 mi chain section has steep drop-offs on both sides — use the chains, take your time, let others pass. Summit views of Zion Canyon are breathtaking.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Grotto+Trailhead%2C+Zion+National+Park%2C+UT" target="_blank">Grotto Trailhead (Angel's Landing)</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">1:00–2:00 PM</div>
+        <div class="event-title">LUNCH: Oscar's Cafe ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.3+ Google · 948 Zion Park Blvd (4 min from Hyatt) · Open Thu</p>
+          <p>Veggie burritos, salads, big portions. Easy and filling after Angel's Landing.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Zion Pizza and Noodle Co</span>
+            <span class="tier tier-sos">SOS: Sol Foods grocery picnic</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=948%20Zion%20Park%20Blvd%2C%20Springdale%2C%20UT%2084767" target="_blank">Directions to Oscar's Cafe</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">2:00–4:30 PM</div>
+        <div class="event-title">Midday Rest at Hotel</div>
+        <div class="event-body"><p>Rest and recover after Angel's Landing. Ice sore muscles. Hydrate. Important — tomorrow is most parking-sensitive day.</p></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">4:30–5:30 PM</div>
+        <div class="event-title">Canyon Overlook Trail ★ NEW (if energy permits)</div>
+        <div class="event-body"><p>1 mi round trip, ~160 ft gain, 30–45 min. Short but stunning viewpoint over Pine Creek Canyon. Accessed from small parking area just east of the Zion-Mt. Carmel tunnel. Late afternoon light is beautiful here.
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Canyon%20Overlook%20Trailhead%2C%20Zion%20National%20Park%2C%20UT" target="_blank">Directions to Canyon Overlook</a></p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">6:00–7:30 PM</div>
+        <div class="event-title">DINNER: Thai Sapa or Spotted Dog (call day-of: 435-772-3244)</div>
+        <div class="event-body">
+          <p>145 Zion Park Blvd · Thu open</p>
+          <p>Thai Sapa is reliable. Note: Dulivia moved to Fri — it has conflicting Thu hours and Whiptail is CLOSED Thu in winter.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Zion Pizza and Noodle Co</span>
+            <span class="tier tier-sos">SOS: Oscar's Cafe</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=145%20Zion%20Park%20Blvd%2C%20Springdale%2C%20UT%2084767" target="_blank">Directions to Thai Sapa</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event critical">
+      <div class="event-card">
+        <div class="event-time">8:00 PM · CRITICAL PREP</div>
+        <div class="event-title">Set Alarm for 5:45 AM — Most Parking-Constrained Day Tomorrow</div>
+        <div class="event-body"><p>Day 8 = most parking-constrained day. Pack anything needed tonight. Fuel up tonight.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 8 -->
+<div class="day-section" id="e-day8" style="--day-color: var(--d8)">
+  <div class="day-header">
+    <div class="day-number">D8</div>
+    <div class="day-title-block">
+      <h2>Emerald Pools + Narrows + Dulivia ★</h2>
+      <div class="day-meta">
+        <span class="day-badge hotel" onclick="showBooking('springdaleChase')">🏨 Hyatt Place Springdale · #2389115891</span>
+        <span class="day-badge">🌡 21/6°C</span>
+        <span class="day-badge">🚗 20–50 mi</span>
+        <span class="day-badge">📅 Friday Mar 6</span>
+        <span class="day-badge">🌿 Emerald Pools + Narrows</span>
+        <span class="day-badge">★ Best dinner night</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">5:45–6:15 AM</div>
+        <div class="event-title">BREAKFAST: Deep Creek Coffee Co (fast)</div>
+        <div class="event-body">
+          <p>4.6 TripAdvisor · Near park entrance · Open Fri</p>
+          <p>Quick coffee + pastry. Speed matters — need to be in the canyon early for parking.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-sos">SOS: Hotel breakfast / pre-packed snack box</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Deep%20Creek%20Coffee%20Co%2C%20Springdale%2C%20UT" target="_blank">Directions to Deep Creek Coffee Co</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">6:15–6:45 AM</div>
+        <div class="event-title">Drive into Zion Canyon (self-drive — no shuttle till Mar 7)</div>
+        <div class="event-body"><p>Go early to secure parking. Most parking-constrained day of the trip.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Zion%20Canyon%20Visitor%20Center%2C%20Springdale%2C%20UT" target="_blank">Directions to Zion Canyon</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">7:00–9:30 AM</div>
+        <div class="event-title">Zion Lodge + Emerald Pools Trail ★★ UPGRADED</div>
+        <div class="event-body"><p>Lower Emerald Pools (1.2 mi RT, easy) to Middle Emerald Pools (2.2 mi RT, moderate). Beautiful hanging gardens and waterfall views. Upper pool trail may be closed seasonally — check at trailhead.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Emerald+Pools+Trailhead%2C+Zion+National+Park%2C+UT" target="_blank">Emerald Pools Trailhead</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">9:30–11:00 AM</div>
+        <div class="event-title">Riverside Walk FULL + Narrows Entry ★★ UPGRADED</div>
+        <div class="event-body"><p>2.2 mi paved RT to the start of the Narrows, then wade into river if conditions allow. March water levels can be cold and moderately high — check conditions at visitor center. Waterproof boots or rental gear from Zion Outfitter in Springdale recommended if going past the pavement.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Temple+of+Sinawava%2C+Zion+National+Park%2C+UT" target="_blank">Temple of Sinawava (Narrows Trailhead)</a></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">11:00 AM</div>
+        <div class="event-title">Return to Springdale (~15 min)</div>
+        <div class="event-body"><p>Head back for lunch and afternoon rest.</p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">11:30 AM–12:30 PM</div>
+        <div class="event-title">LUNCH: Zion Pizza and Noodle Co ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.3 Google · 868 Zion Park Blvd (5 min from Hyatt) · Open daily 11 AM–9 PM</p>
+          <p>Veggie pizza in a converted 1930s Mormon church. Unique atmosphere.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Oscar's Cafe</span>
+            <span class="tier tier-sos">SOS: Sol Foods grocery picnic</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=868%20Zion%20Park%20Blvd%2C%20Springdale%2C%20UT%2084767" target="_blank">Directions to Zion Pizza and Noodle Co</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">12:30–5:00 PM</div>
+        <div class="event-title">Rest at Hotel — Recovery Afternoon</div>
+        <div class="event-body"><p>Nap. Last real rest day.</p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">5:30–7:30 PM</div>
+        <div class="event-title">DINNER: Dulivia Ristorante Italiano ★ SPLURGE</div>
+        <div class="event-body">
+          <p>4.8 Google · 1149 Zion Park Blvd (NEXT DOOR to Hyatt — 1 min walk) · Open Fri 5–9 PM</p>
+          <p>Scratch-made pasta, butternut squash ravioli, fresh bread, gelato, tiramisu. Mountain sunset views from patio.</p>
+          <div class="reserve-badge">RESERVE: Call (435) 772-3700 or book via OpenTable — mandatory.</div>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Whiptail Grill (open Fri 3–8 PM, chile relleno, enchiladas)</span>
+            <span class="tier tier-sos">SOS: Spotted Dog</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=1149%20Zion%20Park%20Blvd%2C%20Springdale%2C%20UT%2084767" target="_blank">Directions to Dulivia</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">8:00 PM</div>
+        <div class="event-title">Evening Town Stroll + Pack for Departure</div>
+        <div class="event-body"><p>Last night in Springdale. Tomorrow: Snow Canyon + Las Vegas.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAY 9 -->
+<div class="day-section" id="e-day9" style="--day-color: var(--d9)">
+  <div class="day-header">
+    <div class="day-number">D9</div>
+    <div class="day-title-block">
+      <h2>Snow Canyon → Las Vegas ✈</h2>
+      <div class="day-meta">
+        <span class="day-badge">✈ 11:55 PM flight from LAS</span>
+        <span class="day-badge">🌡 Springdale 22/8°C → LAS 24/12°C</span>
+        <span class="day-badge">🚗 220–280 mi</span>
+        <span class="day-badge">📅 Saturday Mar 7</span>
+      </div>
+    </div>
+  </div>
+  <div class="timeline">
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">8:00–9:00 AM</div>
+        <div class="event-title">BREAKFAST: MeMe's Cafe ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>4.5 TripAdvisor · 975 Zion Park Blvd · Sat open</p>
+          <p>Veggie crepes, smoothie bowls. No rush today.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Oscar's Cafe</span>
+            <span class="tier tier-sos">SOS: Deep Creek Coffee + snack</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=975%20Zion%20Park%20Blvd%2C%20Springdale%2C%20UT%2084767" target="_blank">Directions to MeMe's Cafe</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event prep">
+      <div class="event-card">
+        <div class="event-time">9:00–9:30 AM</div>
+        <div class="event-title">Check out of Hyatt Place Springdale</div>
+        <div class="event-body"><p>Load car.</p></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">9:30 AM</div>
+        <div class="event-title">Drive Springdale → Snow Canyon (~1 hr)</div>
+        <div class="event-body"><p>Route: UT-9 W → I-15 S → Snow Canyon State Park.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Snow%20Canyon%20State%20Park%2C%20St.%20George%2C%20UT" target="_blank">Directions to Snow Canyon</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">10:30–11:00 AM</div>
+        <div class="event-title">Arrive Snow Canyon State Park</div>
+        <div class="event-body"><p>Utah State Park fee. Easy road access.</p></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">11:00 AM–1:00 PM</div>
+        <div class="event-title">Snow Canyon ★★ UPGRADED — Petrified Dunes + Jenny's Canyon</div>
+        <div class="event-body"><p>Petrified Dunes trail (short, on slickrock — fun scrambling), Jenny's Canyon Trail (0.25 mi, slot canyon feel), and/or Whiptail Trail. Both Petrified Dunes and Jenny's Canyon were flagged as risky in ankle plan — now fully accessible.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Snow+Canyon+State+Park%2C+Ivins%2C+UT" target="_blank">Snow Canyon Trailheads</a></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">1:00 PM</div>
+        <div class="event-title">Drive to St. George for Lunch (~15 min)</div>
+        <div class="event-body"><p>Head into St. George.</p></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">1:30–2:30 PM</div>
+        <div class="event-title">LUNCH: Gaia's Garden Cafe (St. George) ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>Fully vegan · St. George · Sat open</p>
+          <p>Vegan comfort food. St. George, on the way from Snow Canyon to I-15.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Viva Chicken (929 W Sunset Blvd, St. George, 4.5+ Google, veg rice bowls/salads/plantains)</span>
+            <span class="tier tier-sos">SOS: Grocery picnic</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Gaia%27s%20Garden%20Cafe%2C%20St.%20George%2C%20UT" target="_blank">Directions to Gaia's Garden Cafe</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">2:30 PM</div>
+        <div class="event-title">(Optional) Return to Snow Canyon for Golden Hour</div>
+        <div class="event-body"><p>Best light = 1–2 hours before sunset.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Snow+Canyon+State+Park%2C+Ivins%2C+UT" target="_blank">Snow Canyon</a></div>
+      </div>
+    </div>
+
+    <div class="event activity">
+      <div class="event-card">
+        <div class="event-time">4:00–5:30 PM</div>
+        <div class="event-title">Snow Canyon Golden Hour (if returning)</div>
+        <div class="event-body"><p>Excellent final payoff of the trip.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Snow+Canyon+State+Park%2C+Ivins%2C+UT" target="_blank">Snow Canyon</a></div>
+      </div>
+    </div>
+
+    <div class="event drive">
+      <div class="event-card">
+        <div class="event-time">5:30 PM</div>
+        <div class="event-title">Depart for Las Vegas (~120 mi / ~2 hrs via I-15 S)</div>
+        <div class="event-body"><p>Aim to arrive LAS area by 7:30–8:00 PM.</p>
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Las%20Vegas%2C%20NV" target="_blank">Directions to Las Vegas</a></div>
+      </div>
+    </div>
+
+    <div class="event food">
+      <div class="event-card">
+        <div class="event-time">7:30–8:30 PM</div>
+        <div class="event-title">DINNER: Indian Restaurant near LAS Airport ⭐ TOP PICK</div>
+        <div class="event-body">
+          <p>Near Las Vegas Airport · ~10 min from LAS</p>
+          <p>Search Google Maps for 'Indian restaurant near Las Vegas airport' when 60 min out. Several excellent options on S Maryland Pkwy, 10 min from LAS. Dal, paneer, naan, biryani — comfort food. Note: Tacotarian/Crossroads Kitchen changed — both are 15–25 min from LAS in traffic. With 11:55 PM flight, must be at LAS by ~9:30 PM.</p>
+          <div class="meal-tiers">
+            <span class="tier tier-back">BACKUP: Tacotarian (vegan, Strip area, if time permits)</span>
+            <span class="tier tier-sos">SOS: Airport food</span>
+          </div>
+          <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Indian+restaurant+near+Las+Vegas+McCarran+airport" target="_blank">Search Indian near LAS</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="event critical">
+      <div class="event-card">
+        <div class="event-time">9:00–9:30 PM · CRITICAL</div>
+        <div class="event-title">Arrive at LAS Airport — Return Rental Car</div>
+        <div class="event-body"><p>Give plenty of buffer — drop car, shuttle to terminal, check in.</p></div>
+      </div>
+    </div>
+
+    <div class="event critical">
+      <div class="event-card">
+        <div class="event-time">11:55 PM · Flight</div>
+        <div class="event-title">✈ Flight Departs — Trip Complete</div>
+        <div class="event-body"><p>You did it.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+</div><!-- /tab-exciting -->
+
+
+<!-- RESERVATIONS -->
+<div class="info-section" id="reservations">
+  <h2>⚠ Reservations — Tap for Details</h2>
+
+  <!-- 1: Sabaku Sushi -->
+  <div class="res-card confirmed" onclick="toggleRes(this)">
+    <div class="res-header">
+      <div class="res-num">1</div>
+      <div class="res-summary">
+        <h3>Sabaku Sushi</h3>
+        <p>Moab · Fri Feb 27 · 7:30 PM · 2 guests</p>
+      </div>
+      <span class="res-status">✅ CONFIRMED</span>
+      <span class="res-chevron">▼</span>
+    </div>
+    <div class="res-body">
+      <div class="res-detail-grid">
+        <div class="res-detail-item"><div class="lbl">Date &amp; Time</div><div class="val">Fri Feb 27 · 7:30 PM</div></div>
+        <div class="res-detail-item"><div class="lbl">Guests</div><div class="val">2 guests</div></div>
+        <div class="res-detail-item"><div class="lbl">Address</div><div class="val">90 E Center St</div><div class="sub">Moab, UT 84532</div></div>
+        <div class="res-detail-item"><div class="lbl">Phone</div><div class="val">(435) 259-4455</div></div>
+        <div class="res-detail-item"><div class="lbl">Booked Via</div><div class="val">TouchBistro Dine</div><div class="sub">sabakusushi.com</div></div>
+        <div class="res-detail-item"><div class="lbl">Status</div><div class="val" style="color:#34d399">✅ Confirmed</div><div class="sub">Confirmation sent by email</div></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=90+E+Center+St%2C+Moab%2C+UT+84532" target="_blank">Directions</a>
+        <a class="maps-btn" href="tel:+14352594455" style="background:rgba(52,211,153,0.12);border-color:rgba(52,211,153,0.3);color:#6ee7b7">📞 Call</a>
+      </div>
+      <p style="margin-top:10px;font-size:0.75rem;color:#fbbf24">⚠ Must be seated by 8:15 PM latest — closes 9 PM. Given flight lands 3:05 PM + car pickup 5 PM, call ahead to confirm 7:30 PM still works or push to 8 PM.</p>
+    </div>
+  </div>
+
+  <!-- 2: Stone Hearth Grille -->
+  <div class="res-card pending" onclick="toggleRes(this)">
+    <div class="res-header">
+      <div class="res-num">2</div>
+      <div class="res-summary">
+        <h3>Stone Hearth Grille</h3>
+        <p>Tropic · Tue Mar 3 · ~5:30 PM</p>
+      </div>
+      <span class="res-status">⚠ CALL FIRST</span>
+      <span class="res-chevron">▼</span>
+    </div>
+    <div class="res-body">
+      <div class="res-detail-grid">
+        <div class="res-detail-item"><div class="lbl">Target Date</div><div class="val">Tue Mar 3 · ~5:30 PM</div></div>
+        <div class="res-detail-item"><div class="lbl">Address</div><div class="val">1380 W Stone Canyon Ln</div><div class="sub">Tropic, UT 84776 · 15 min from Ruby's</div></div>
+        <div class="res-detail-item"><div class="lbl">Phone</div><div class="val">(435) 679-8923</div></div>
+        <div class="res-detail-item"><div class="lbl">Hours (when open)</div><div class="val">Dinner 5–9:30 PM</div></div>
+        <div class="res-detail-item"><div class="lbl">Rating</div><div class="val">4.7 TripAdvisor</div></div>
+        <div class="res-detail-item"><div class="lbl">Status</div><div class="val" style="color:#fbbf24">⚠ Likely Closed</div><div class="sub">2025 season opened Mar 14</div></div>
+      </div>
+      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:10px;font-size:0.78rem;color:#fcd34d;margin-bottom:12px">
+        Call 1–2 weeks before to confirm seasonal opening. If open, make a reservation. If closed, default to The Pizza Place (Tropic, 4.5★) or Ruby's buffet.
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=1380+W+Stone+Canyon+Ln%2C+Tropic%2C+UT+84776" target="_blank">Directions</a>
+        <a class="maps-btn" href="tel:+14356798923" style="background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.3);color:#fbbf24">📞 Call to Confirm</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3: Dulivia -->
+  <div class="res-card booked" onclick="toggleRes(this)">
+    <div class="res-header">
+      <div class="res-num">3</div>
+      <div class="res-summary">
+        <h3>Dulivia Ristorante Italiano</h3>
+        <p>Springdale · Fri Mar 6 · ~5:30 PM · ★ Best dinner night</p>
+      </div>
+      <span class="res-status">📋 BOOK NOW</span>
+      <span class="res-chevron">▼</span>
+    </div>
+    <div class="res-body">
+      <div class="res-detail-grid">
+        <div class="res-detail-item"><div class="lbl">Target Date</div><div class="val">Fri Mar 6 · 5:30 PM</div></div>
+        <div class="res-detail-item"><div class="lbl">Address</div><div class="val">1149 Zion Park Blvd</div><div class="sub">Springdale, UT 84767 · Next door to Hyatt!</div></div>
+        <div class="res-detail-item"><div class="lbl">Phone</div><div class="val">(435) 772-3700</div></div>
+        <div class="res-detail-item"><div class="lbl">Hours</div><div class="val">Fri 5–9 PM</div></div>
+        <div class="res-detail-item"><div class="lbl">Rating</div><div class="val">4.8 Google</div></div>
+        <div class="res-detail-item"><div class="lbl">Highlight</div><div class="val">Scratch-made pasta</div><div class="sub">Butternut squash ravioli · gelato · tiramisu</div></div>
+      </div>
+      <div style="background:rgba(165,180,252,0.08);border:1px solid rgba(165,180,252,0.2);border-radius:8px;padding:10px;font-size:0.78rem;color:#c4b5fd;margin-bottom:12px">
+        ★ This is your best food night of the trip. Mountain sunset views from patio. Book via OpenTable or call day-before to confirm open.
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=1149+Zion+Park+Blvd%2C+Springdale%2C+UT+84767" target="_blank">Directions</a>
+        <a class="maps-btn" href="tel:+14357723700" style="background:rgba(165,180,252,0.1);border-color:rgba(165,180,252,0.3);color:#a5b4fc">📞 Call</a>
+        <a class="maps-btn" href="https://www.opentable.com/r/dulivia-ristorante-italiano-springdale" target="_blank" style="background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#fca5a5">🍽 OpenTable</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GROCERY -->
+<div class="info-section" id="grocery">
+  <h2>🛒 Grocery Stops</h2>
+  <div class="grocery-grid">
+    <div class="grocery-card">
+      <div class="when">Day 1 or 3 Evening</div>
+      <h3>City Market, Moab</h3>
+      <p>425 S Main St — 1 min from Hyatt Place</p>
+      <p style="margin-top:8px"><strong style="color:#e2e8f0">Buy:</strong> Day 4 snack box: fruit, nuts, granola bars, PB+crackers, water. Also stock the Emergency Car Food Kit.</p>
+      <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=City+Market%2C+425+S+Main+St%2C+Moab%2C+UT+84532" target="_blank">Directions</a>
+    </div>
+    <div class="grocery-card">
+      <div class="when">Day 5 Morning</div>
+      <h3>Ruby's Inn General Store</h3>
+      <p>At hotel — Best Western Ruby's Inn</p>
+      <p style="margin-top:8px"><strong style="color:#e2e8f0">Buy:</strong> Packed lunch for Kodachrome Basin day trip (there is NOTHING near Kodachrome).</p>
+    </div>
+    <div class="grocery-card">
+      <div class="when">Day 6 Onward</div>
+      <h3>Sol Foods Market, Springdale</h3>
+      <p>Zion Park Blvd, Springdale</p>
+      <p style="margin-top:8px"><strong style="color:#e2e8f0">Buy:</strong> Snacks + picnic supplies for Zion days.</p>
+      <a class="maps-btn" href="https://www.google.com/maps/dir/?api=1&destination=Sol+Foods+Supermarket%2C+Springdale%2C+UT" target="_blank">Directions</a>
+    </div>
+  </div>
+
+  <div class="kit-box">
+    <h3>🚗 Emergency Car Food Kit — Stock Day 1 Evening at City Market</h3>
+    <p><strong style="color:#e2e8f0">Keep in car ALL TRIP.</strong> Replenish at Ruby's General Store (Day 5) and Sol Foods (Day 6).</p>
+    <p style="margin-top:6px">Contents: peanut butter + crackers/bread · trail mix · protein bars · fresh fruit (apples, bananas) · filled water bottles · single-serve chip bags</p>
+    <p class="red">Rural Utah restaurants close without notice in winter.</p>
+  </div>
+</div>
+
+<!-- TRIP TIPS -->
+<div class="info-section" id="tips">
+  <h2>⚡ Trip Tips &amp; Safety Notes</h2>
+  <table class="tips-table">
+    <thead><tr><th>Category</th><th>Tip</th></tr></thead>
+    <tbody>
+      <tr><td>Angel's Landing</td><td>Start by 9 AM per your permit. Chain section is exposed with 1,000+ ft drops on both sides. Grippy gloves help. Let faster hikers pass. Don't rush. If icy or windy, turn back — use judgment.</td></tr>
+      <tr><td>Delicate Arch</td><td>3 mi RT, ~1.5–2 hrs. No shade, exposed sandstone. Bring 1L water minimum. Morning is cooler. Final bowl approach is a sloping ledge — stay aware of footing.</td></tr>
+      <tr><td>Bryce Navajo Loop</td><td>Steep switchbacks descending 550 ft. Can be icy in early March — ice cleats recommended. The Wall Street section is narrow and shaded. Yaktrax also essential for rim viewpoints (Sunrise/Sunset Point paved but icy).</td></tr>
+      <tr><td>The Narrows</td><td>March water temps in the low 40s °F. Waterproof boots + neoprene socks strongly recommended. Check river flow at Zion visitor center — above 150 cfs gets sporty. Rental gear at Zion Outfitter, Springdale.</td></tr>
+      <tr><td>Ankle: Footwear</td><td>Lace-up ankle brace or supportive hiking boot is non-negotiable. Even 'flat' Utah trails have uneven sandy/rocky patches.</td></tr>
+      <tr><td>Ankle: Bryce Cold</td><td>Bryce sits at ~8,000 ft. Cold + altitude makes a sprained ankle stiffer and more painful, especially in the AM. Budget extra warm-up time.</td></tr>
+      <tr><td>Ankle: Dead Horse</td><td>Parking lot to overlook is short but uneven terrain. Bring the folding stool — standing on rocky ground waiting for sunset is tiring.</td></tr>
+      <tr><td>Ankle: Day 4 Driving</td><td>350–420 miles with a sprained ankle for 6+ hrs is genuinely fatiguing. Use cruise control aggressively on open highway.</td></tr>
+      <tr><td>Ankle: No Zero Day</td><td>9 consecutive days with no built-in rest day. If ankle flares on Day 3 or 4, flag Days 3 or 6 as potential full-rest days.</td></tr>
+      <tr><td>Medical Supplies</td><td>Pack: KT tape / athletic tape, Voltaren gel (nightly), 2 instant cold packs in car (no ice at trailheads).</td></tr>
+      <tr><td>Rental Car</td><td>Confirm HIGH-CLEARANCE SUV at SLC. Check rental agreement for unpaved road coverage — many contracts exclude dirt road damage. Moonscape/Bentonite Hills on Day 4 needs high clearance.</td></tr>
+      <tr><td>Fuel Strategy</td><td>Fuel up the night before each big drive day: D1 evening (D2 Arches) · D3 evening (D4 Hanksville) · D7 evening (D8 early Zion) · D8 evening (D9 Vegas).</td></tr>
+      <tr><td>America the Beautiful</td><td>Buy at Arches entrance Day 2. Covers Arches, Bryce, Zion NPS. Does NOT cover Utah State Parks (Goblin Valley, Kodachrome, Dead Horse, Snow Canyon).</td></tr>
+      <tr><td>Water</td><td>Carry minimum 2L per person per day. Utah is DRY. Dehydration worsens ankle swelling and fatigue on hikes.</td></tr>
+      <tr><td>Snow Canyon</td><td>Petrified Dunes slickrock involves uneven terrain — grippy footwear essential. Jenny's Canyon is a short slot canyon, no technical skills needed.</td></tr>
+      <tr><td>Nearest Urgent Care</td><td>Moab: Moab Regional Hospital (450 W Williams Way). Springdale: Intermountain St. George (~45 min drive).</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PACKING -->
+<div class="info-section" id="packing">
+  <h2>🎒 Packing Checklist</h2>
+  <div class="checklist-grid">
+    <div class="check-item"><input type="checkbox" id="p1"><label for="p1">Hiking boots (broken in)<span>Angel's Landing, Delicate Arch, Bryce — every day</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p2"><label for="p2">Lace-up ankle brace + backup shoes<span>Primary ankle protection — every day</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p3"><label for="p3">Yaktrax / ice cleats<span>Icy Bryce rim paths at 8,000 ft — Days 5–6</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p4"><label for="p4">Grippy gloves<span>Angel's Landing chain section — Day 7 essential</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p5"><label for="p5">Waterproof boots or Narrows rental gear<span>Narrows wading Day 8 — rent from Zion Outfitter</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p6"><label for="p6">Trekking poles (optional)<span>Angel's Landing + Bryce Navajo Loop — Days 5, 7</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p7"><label for="p7">KT tape + athletic tape<span>Extra ankle support on bigger walking days</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p8"><label for="p8">Voltaren gel (diclofenac)<span>Nightly anti-inflammatory — every night</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p9"><label for="p9">2x instant cold packs<span>No ice at trailheads — car kit, all trip</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p10"><label for="p10">Folding stool<span>Sunset waits on uneven ground — D3 (Dead Horse), D6–8</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p11"><label for="p11">Sunscreen + hat + sunglasses<span>Desert UV is brutal even in March — every day</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p12"><label for="p12">2L water bottles per person<span>Stay hydrated — dehydration worsens on hikes</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p13"><label for="p13">Car snack box<span>Rural food deserts, closed restaurants — stock D1 evening</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p14"><label for="p14">Warm layers + wind shell<span>Bryce = cold/windy at 8,000 ft — Days 4–6</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p15"><label for="p15">Headlamp / flashlight<span>Early starts, Angel's Landing prep — Days 7–8</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p16"><label for="p16">Phone charger + car mount<span>GPS navigation on remote roads — every day</span></label></div>
+    <div class="check-item"><input type="checkbox" id="p17"><label for="p17">America the Beautiful Pass<span>Already purchased — carry digitally or physically every day</span></label></div>
+  </div>
+  <p style="margin-top:16px;font-size:0.75rem;color:#4b5563;font-style:italic">Verified Feb 24, 2026. Confirm Stone Hearth (seasonal), Whiptail (winter hours), and Dulivia (call day-before) 1–2 days before each visit.</p>
+</div>
+
+
+
+
+
+<!-- BOOKINGS -->
+<div class="info-section" id="bookings">
+  <h2>✈ Bookings &amp; Confirmations</h2>
+
+  <!-- Flights -->
+  <h3 style="color:#94a3b8;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;margin-top:4px">Flights — American Airlines · Conf: KWRWCX</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+    <div class="info-card" style="border-color:rgba(59,130,246,0.65);background:rgba(59,130,246,0.1)">
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#60a5fa;margin-bottom:8px">Outbound ✈</div>
+      <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:6px">DFW → SLC</div>
+      <p><strong style="color:#e2e8f0">AA 1456</strong> · Fri Feb 27</p>
+      <p>Departs <strong style="color:#e2e8f0">1:12 PM</strong> DFW</p>
+      <p>Arrives <strong style="color:#e2e8f0">3:05 PM</strong> SLC</p>
+      <p style="margin-top:6px;color:#6b7280">Economy (B) · 2h 53m</p>
+      <p style="color:#6b7280">First checked bag free</p>
+    </div>
+    <div class="info-card" style="border-color:rgba(59,130,246,0.65);background:rgba(59,130,246,0.1)">
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#60a5fa;margin-bottom:8px">Return ✈</div>
+      <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:6px">LAS → DFW</div>
+      <p><strong style="color:#e2e8f0">AA 2921</strong> · Sat Mar 7</p>
+      <p>Departs <strong style="color:#e2e8f0">11:59 PM</strong> LAS</p>
+      <p>Arrives <strong style="color:#e2e8f0">5:41 AM</strong> DFW (Mar 8)</p>
+      <p style="margin-top:6px;color:#6b7280">Economy (B) · 2h 42m</p>
+      <p style="color:#34d399;font-size:0.78rem;font-weight:600">$0 out of pocket — AA Trip Credit</p>
+    </div>
+  </div>
+
+  <!-- Hotels -->
+  <h3 style="color:#94a3b8;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px">Hotels</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:24px">
+    <div class="info-card" style="border-color:rgba(107,70,193,0.7);background:rgba(107,70,193,0.12)">
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#a5b4fc;margin-bottom:6px">D1–D3 · 3 nights</div>
+      <h3>Hyatt Place Moab</h3>
+      <p>890 N Main St, Moab, UT 84532</p>
+      <p><a href="tel:+14352599190" style="color:#a5b4fc">+1 435-259-9190</a></p>
+      <p style="margin-top:6px"><strong style="color:#e2e8f0">Check-in:</strong> Fri Feb 27, 3:00 PM</p>
+      <p><strong style="color:#e2e8f0">Check-out:</strong> Mon Mar 2, 12:00 PM</p>
+      <p><strong style="color:#e2e8f0">Room:</strong> 2 Queen + Sofa Bed, Mountain View</p>
+      <p style="margin-top:6px"><strong style="color:#e2e8f0">Conf:</strong> H-RP3GQ2DK247S</p>
+      <p style="color:#34d399;font-size:0.78rem;margin-top:4px">Paid $133.56 ($300 CapOne credit applied)</p>
+    </div>
+    <div class="info-card" style="border-color:rgba(192,86,33,0.7);background:rgba(192,86,33,0.12)">
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#fcd34d;margin-bottom:6px">D4–D5 · 2 nights</div>
+      <h3>Best Western Ruby's Inn</h3>
+      <p>26 S Main St, Bryce Canyon City, UT 84764</p>
+      <p><a href="tel:+18668666616" style="color:#fcd34d">(866) 866-6616</a></p>
+      <p style="margin-top:6px"><strong style="color:#e2e8f0">Check-in:</strong> Mon Mar 2, 4:00 PM</p>
+      <p><strong style="color:#e2e8f0">Check-out:</strong> Wed Mar 4, 11:00 AM</p>
+      <p><strong style="color:#e2e8f0">Room:</strong> Lake View, 2 Queen Beds</p>
+      <p style="margin-top:6px"><strong style="color:#e2e8f0">Conf:</strong> H-S64PK3G8FHTT / 781894543 / 589885</p>
+      <p style="color:#34d399;font-size:0.78rem;margin-top:4px">Paid $230.13</p>
+    </div>
+    <div class="info-card" style="border-color:rgba(184,50,128,0.7);background:rgba(184,50,128,0.12)">
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#c4b5fd;margin-bottom:6px">D6–D7 · 2 nights (Bilt)</div>
+      <h3>Hyatt Place Springdale</h3>
+      <p>1215 Zion Park Blvd, Springdale, UT 84767</p>
+      <p><a href="tel:+14357723200" style="color:#c4b5fd">1-435-772-3200</a></p>
+      <p style="margin-top:6px"><strong style="color:#e2e8f0">Check-in:</strong> Wed Mar 4, 3:00 PM</p>
+      <p><strong style="color:#e2e8f0">Check-out:</strong> Fri Mar 6, 11:00 AM</p>
+      <p><strong style="color:#e2e8f0">Room:</strong> 1 King + Sofa Bed, Mountain View</p>
+      <p style="margin-top:6px"><strong style="color:#e2e8f0">Conf:</strong> Pending (Bilt booking)</p>
+      <p style="color:#34d399;font-size:0.78rem;margin-top:4px">Paid $218.94 (~$250 Bilt points applied)</p>
+    </div>
+    <div class="info-card" style="border-color:rgba(40,94,97,0.7);background:rgba(40,94,97,0.15)">
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#c4b5fd;margin-bottom:6px">D8 · 1 night (Chase)</div>
+      <h3>Hyatt Place Springdale</h3>
+      <p>1215 Zion Park Blvd, Springdale, UT 84767</p>
+      <p><a href="tel:+14357723200" style="color:#c4b5fd">1-435-772-3200</a></p>
+      <p style="margin-top:6px"><strong style="color:#e2e8f0">Check-in:</strong> Fri Mar 6, 3:00 PM</p>
+      <p><strong style="color:#e2e8f0">Check-out:</strong> Sat Mar 7, 11:00 AM</p>
+      <p><strong style="color:#e2e8f0">Room:</strong> 1 King, Accessible Bath Tub</p>
+      <p style="margin-top:6px"><strong style="color:#e2e8f0">Conf:</strong> 2389115891 (Hotel) / 1013235319 (Chase)</p>
+      <p style="color:#fca5a5;font-size:0.78rem;margin-top:4px">Non-refundable · Paid $142.14 ($50 Chase credit)</p>
+    </div>
+  </div>
+
+  <!-- Car Rental -->
+  <h3 style="color:#94a3b8;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px">Car Rental — Budget via Costco</h3>
+  <div class="info-card" style="border-color:rgba(239,68,68,0.6);background:rgba(239,68,68,0.1);margin-bottom:24px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">
+      <div>
+        <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;margin-bottom:4px">Vehicle</p>
+        <p style="color:#e2e8f0;font-weight:600">Jeep Grand Cherokee 4WD (or similar)</p>
+        <p style="font-size:0.78rem;color:#9ca3af">Automatic · A/C · Unlimited mileage · Additional driver included</p>
+      </div>
+      <div>
+        <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;margin-bottom:4px">Pick-up</p>
+        <p style="color:#e2e8f0;font-weight:600">Feb 27 · 5:00 PM</p>
+        <p style="font-size:0.78rem;color:#9ca3af">3974 W 500 N, Salt Lake City, UT 84116</p>
+        <a class="maps-btn" style="margin-top:6px" href="https://www.google.com/maps/dir/?api=1&destination=3974+W+500+N%2C+Salt+Lake+City%2C+UT+84116" target="_blank">Directions to pickup</a>
+      </div>
+      <div>
+        <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;margin-bottom:4px">Drop-off</p>
+        <p style="color:#e2e8f0;font-weight:600">Mar 7 · 10:00 PM</p>
+        <p style="font-size:0.78rem;color:#9ca3af">Harry Reid Intl Airport, 7135 Gilespie St, Las Vegas, NV 89119</p>
+      </div>
+      <div>
+        <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;margin-bottom:4px">Confirmations</p>
+        <p style="color:#e2e8f0">Costco: <strong>C483453470</strong></p>
+        <p style="color:#e2e8f0">Budget: <strong>40126093US0</strong></p>
+        <p style="margin-top:6px;font-size:0.78rem;color:#9ca3af">Before trip: <a href="tel:+18884552848" style="color:#fca5a5">1-888-455-2848</a></p>
+        <p style="font-size:0.78rem;color:#9ca3af">During trip: <a href="tel:+18663174711" style="color:#fca5a5">1-866-317-4711</a></p>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:16px;flex-wrap:wrap">
+      <p style="font-size:0.82rem;color:#9ca3af">Base: $510.00 + Taxes &amp; Fees: $337.38</p>
+      <p style="font-size:0.82rem;color:#fca5a5;font-weight:600">Total $847.38 — Reserve Now, Pay Later (due at pickup)</p>
+    </div>
+  </div>
+
+  <!-- Cost Summary -->
+  <h3 style="color:#94a3b8;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px">Total Cost Summary</h3>
+  <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden">
+    <table style="width:100%;border-collapse:collapse;font-size:0.83rem">
+      <thead>
+        <tr style="background:rgba(255,255,255,0.05)">
+          <th style="text-align:left;padding:10px 14px;color:#6b7280;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em">Booking</th>
+          <th style="text-align:right;padding:10px 14px;color:#6b7280;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em">Total Cost</th>
+          <th style="text-align:right;padding:10px 14px;color:#6b7280;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em">Paid / Due</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)"><td style="padding:10px 14px;color:#e2e8f0">Flights — AA (Saket + Sakshi)</td><td style="padding:10px 14px;text-align:right;color:#9ca3af">$831.02</td><td style="padding:10px 14px;text-align:right;color:#34d399;font-weight:600">$0.00</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)"><td style="padding:10px 14px;color:#e2e8f0">Hyatt Place Moab (3 nights)</td><td style="padding:10px 14px;text-align:right;color:#9ca3af">$433.56</td><td style="padding:10px 14px;text-align:right;color:#34d399;font-weight:600">$133.56</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)"><td style="padding:10px 14px;color:#e2e8f0">Ruby's Inn, Bryce (2 nights)</td><td style="padding:10px 14px;text-align:right;color:#9ca3af">$230.13</td><td style="padding:10px 14px;text-align:right;color:#9ca3af">$230.13</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)"><td style="padding:10px 14px;color:#e2e8f0">Hyatt Springdale — Bilt (2 nights)</td><td style="padding:10px 14px;text-align:right;color:#9ca3af">$468.94</td><td style="padding:10px 14px;text-align:right;color:#34d399;font-weight:600">$218.94</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)"><td style="padding:10px 14px;color:#e2e8f0">Hyatt Springdale — Chase (1 night)</td><td style="padding:10px 14px;text-align:right;color:#9ca3af">$192.14</td><td style="padding:10px 14px;text-align:right;color:#34d399;font-weight:600">$142.14</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)"><td style="padding:10px 14px;color:#e2e8f0">Car Rental — Budget, 8 days</td><td style="padding:10px 14px;text-align:right;color:#9ca3af">$847.38</td><td style="padding:10px 14px;text-align:right;color:#fca5a5;font-weight:600">$847.38 (due at pickup)</td></tr>
+        <tr style="background:rgba(255,255,255,0.04)"><td style="padding:12px 14px;color:#f8fafc;font-weight:700">GRAND TOTAL</td><td style="padding:12px 14px;text-align:right;color:#f8fafc;font-weight:700">$3,003.17</td><td style="padding:12px 14px;text-align:right;color:#34d399;font-weight:700">$1,572.15</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:10px;font-size:0.78rem;color:#34d399">Savings of ~$1,431 from credits &amp; points: Free AA Trip Credits ($831.02) · CapOne $300 travel credit · ~$250 Bilt points · $50 Chase credit</p>
+</div>
+
+<!-- AMERICA THE BEAUTIFUL PASS -->
+<div class="info-section" id="pass">
+  <h2>🏕 America the Beautiful Pass</h2>
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;background:rgba(255,255,255,0.03);border:1px solid rgba(99,102,241,0.3);border-radius:16px;padding:24px">
+    <img src="/pass.jpg" alt="America the Beautiful Pass" class="pass-thumb" style="width:220px;border-radius:10px;display:block" onclick="document.getElementById('passModal').classList.add('open')" title="Click to enlarge">
+    <div>
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#a5b4fc;margin-bottom:8px">2026 Digital Resident Annual Pass</div>
+      <h3 style="font-size:1.2rem;font-weight:700;color:#f8fafc;margin-bottom:14px">Saket Bajaj</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:14px">
+        <div><p style="font-size:0.7rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.04em">Pass ID</p><p style="font-size:0.78rem;color:#e2e8f0;font-weight:600;word-break:break-all">f6527f84-22c0-53b6-84b4-59e2064ddfaa</p></div>
+        <div><p style="font-size:0.7rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.04em">Reservation #</p><p style="font-size:0.9rem;color:#e2e8f0;font-weight:700">0891139064-1</p></div>
+        <div><p style="font-size:0.7rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.04em">Barcode</p><p style="font-size:0.9rem;color:#e2e8f0;font-weight:700">0227SAFA2526AN</p></div>
+        <div><p style="font-size:0.7rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.04em">Valid Through</p><p style="font-size:0.9rem;color:#34d399;font-weight:700">02/28/2027</p></div>
+      </div>
+      <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:12px;font-size:0.8rem;color:#9ca3af">
+        <p><strong style="color:#6ee7b7">✓ Covers:</strong> Arches NP (D2) · Bryce Canyon NP (D5) · Zion NP (D6–D8) entrance fees</p>
+        <p style="margin-top:4px"><strong style="color:#fca5a5">✗ Does NOT cover:</strong> Utah State Parks — Goblin Valley, Kodachrome Basin, Dead Horse Point, Snow Canyon (separate fees)</p>
+        <p style="margin-top:4px"><strong style="color:#fbbf24">Note:</strong> Pass holder must be present. Valid photo ID required. Show digital or physical pass — copies/photos not accepted.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  Utah Road Trip · Feb 27–Mar 7, 2026 · SLC → Moab → Bryce → Springdale → LAS<br>
+  All Google Maps links open navigation from your current location.
+</div>
+
+<!-- Pass Modal -->
+<!-- Booking detail modal -->
+<div class="modal-overlay" id="bookingModal" onclick="this.classList.remove('open')">
+  <div class="bk-modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" style="position:absolute;top:12px;right:12px" onclick="document.getElementById('bookingModal').classList.remove('open')">✕</button>
+    <div id="bookingModalContent"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="passModal" onclick="this.classList.remove('open')">
+  <button class="modal-close" onclick="document.getElementById('passModal').classList.remove('open')">✕</button>
+  <img src="/pass.jpg" alt="America the Beautiful Pass" onclick="event.stopPropagation()">
+</div>
+
+<script>
+const BOOKING_DATA = {
+  moab: `<div class="bk-nights">D1–D3 · 3 Nights</div><h3>🏨 Hyatt Place Moab</h3>
+    <div class="bk-row"><span class="bk-lbl">Address</span><span class="bk-val">890 N Main St, Moab, UT 84532</span></div>
+    <div class="bk-row"><span class="bk-lbl">Phone</span><span class="bk-val"><a href="tel:+14352599190" style="color:#a5b4fc">+1 435-259-9190</a></span></div>
+    <div class="bk-row"><span class="bk-lbl">Check-in</span><span class="bk-val">Fri Feb 27 · 3:00 PM</span></div>
+    <div class="bk-row"><span class="bk-lbl">Check-out</span><span class="bk-val">Mon Mar 2 · 12:00 PM</span></div>
+    <div class="bk-row"><span class="bk-lbl">Room</span><span class="bk-val">2 Queen + Sofa Bed, Mountain View</span></div>
+    <div class="bk-row"><span class="bk-lbl">Confirmation</span><span class="bk-val bk-conf">H-RP3GQ2DK247S</span></div>
+    <div class="bk-paid">✓ Paid $133.56 · $300 CapOne travel credit applied</div>`,
+  rubys: `<div class="bk-nights">D4–D5 · 2 Nights</div><h3>🏨 Best Western Ruby's Inn</h3>
+    <div class="bk-row"><span class="bk-lbl">Address</span><span class="bk-val">26 S Main St, Bryce Canyon City, UT 84764</span></div>
+    <div class="bk-row"><span class="bk-lbl">Phone</span><span class="bk-val"><a href="tel:+18668666616" style="color:#a5b4fc">(866) 866-6616</a></span></div>
+    <div class="bk-row"><span class="bk-lbl">Check-in</span><span class="bk-val">Mon Mar 2 · 4:00 PM</span></div>
+    <div class="bk-row"><span class="bk-lbl">Check-out</span><span class="bk-val">Wed Mar 4 · 11:00 AM</span></div>
+    <div class="bk-row"><span class="bk-lbl">Room</span><span class="bk-val">Lake View, 2 Queen Beds</span></div>
+    <div class="bk-row"><span class="bk-lbl">Conf (Hyatt)</span><span class="bk-val bk-conf">H-S64PK3G8FHTT</span></div>
+    <div class="bk-row"><span class="bk-lbl">Conf (Res)</span><span class="bk-val bk-conf">781894543 / 589885</span></div>
+    <div class="bk-paid">✓ Paid $230.13</div>`,
+  springdaleBilt: `<div class="bk-nights">D6–D7 · 2 Nights · Bilt Points</div><h3>🏨 Hyatt Place Springdale</h3>
+    <div class="bk-row"><span class="bk-lbl">Address</span><span class="bk-val">1215 Zion Park Blvd, Springdale, UT 84767</span></div>
+    <div class="bk-row"><span class="bk-lbl">Phone</span><span class="bk-val"><a href="tel:+14357723200" style="color:#a5b4fc">1-435-772-3200</a></span></div>
+    <div class="bk-row"><span class="bk-lbl">Check-in</span><span class="bk-val">Wed Mar 4 · 3:00 PM</span></div>
+    <div class="bk-row"><span class="bk-lbl">Check-out</span><span class="bk-val">Fri Mar 6 · 11:00 AM</span></div>
+    <div class="bk-row"><span class="bk-lbl">Room</span><span class="bk-val">1 King + Sofa Bed, Mountain View</span></div>
+    <div class="bk-row"><span class="bk-lbl">Confirmation</span><span class="bk-val bk-conf">Pending (Bilt booking)</span></div>
+    <div class="bk-paid">✓ Paid $218.94 · ~$250 Bilt points applied</div>`,
+  car: `<div class="bk-nights">Feb 27 → Mar 7 · 8 Days</div><h3>🚗 Budget Jeep Grand Cherokee 4WD</h3>
+    <div class="bk-row"><span class="bk-lbl">Pick-up</span><span class="bk-val">Feb 27 · 5:00 PM<br><small style="color:#9ca3af">3974 W 500 N, Salt Lake City, UT 84116</small></span></div>
+    <div class="bk-row"><span class="bk-lbl">Drop-off</span><span class="bk-val">Mar 7 · 10:00 PM<br><small style="color:#9ca3af">Harry Reid Intl Airport, Las Vegas, NV</small></span></div>
+    <div class="bk-row"><span class="bk-lbl">Vehicle</span><span class="bk-val">Automatic · A/C · Unlimited miles · Extra driver included</span></div>
+    <div class="bk-row"><span class="bk-lbl">Costco Conf</span><span class="bk-val bk-conf">C483453470</span></div>
+    <div class="bk-row"><span class="bk-lbl">Budget Conf</span><span class="bk-val bk-conf">40126093US0</span></div>
+    <div class="bk-row"><span class="bk-lbl">Before trip</span><span class="bk-val"><a href="tel:+18884552848" style="color:#a5b4fc">1-888-455-2848</a></span></div>
+    <div class="bk-row"><span class="bk-lbl">Roadside</span><span class="bk-val"><a href="tel:+18663174711" style="color:#a5b4fc">1-866-317-4711</a></span></div>
+    <div class="bk-warn">⚠ $847.38 due at pickup (Reserve Now, Pay Later)</div>`,
+  springdaleChase: `<div class="bk-nights">D8 · 1 Night · Chase Points</div><h3>🏨 Hyatt Place Springdale</h3>
+    <div class="bk-row"><span class="bk-lbl">Address</span><span class="bk-val">1215 Zion Park Blvd, Springdale, UT 84767</span></div>
+    <div class="bk-row"><span class="bk-lbl">Phone</span><span class="bk-val"><a href="tel:+14357723200" style="color:#a5b4fc">1-435-772-3200</a></span></div>
+    <div class="bk-row"><span class="bk-lbl">Check-in</span><span class="bk-val">Fri Mar 6 · 3:00 PM</span></div>
+    <div class="bk-row"><span class="bk-lbl">Check-out</span><span class="bk-val">Sat Mar 7 · 11:00 AM</span></div>
+    <div class="bk-row"><span class="bk-lbl">Room</span><span class="bk-val">1 King, Accessible Bath Tub</span></div>
+    <div class="bk-row"><span class="bk-lbl">Conf (Hotel)</span><span class="bk-val bk-conf">2389115891</span></div>
+    <div class="bk-row"><span class="bk-lbl">Conf (Chase)</span><span class="bk-val bk-conf">1013235319</span></div>
+    <div class="bk-warn">⚠ Non-refundable</div>
+    <div class="bk-paid">✓ Paid $142.14 · $50 Chase travel credit applied</div>`
+};
+
+function showBooking(key) {
+  document.getElementById('bookingModalContent').innerHTML = BOOKING_DATA[key];
+  document.getElementById('bookingModal').classList.add('open');
+}
+
+
+let currentTab = 'exciting';
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.body.className = 'tab-' + tab;
+  document.getElementById('tab-relaxing').classList.toggle('active', tab === 'relaxing');
+  document.getElementById('tab-exciting').classList.toggle('active', tab === 'exciting');
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.classList.contains(tab));
+  });
+  // Scroll to top of container
+  document.querySelector('.container').scrollIntoView({behavior: 'smooth'});
+}
+
+let _navBusy = false, _navTimer;
+function navTo(section) {
+  // For day sections and tips/packing, prefix with 'e-' on exciting tab
+  const tabSections = ['day1','day2','day3','day4','day5','day6','day7','day8','day9'];
+  let id = section;
+  if (currentTab === 'exciting' && tabSections.includes(section)) {
+    id = 'e-' + section;
+  }
+  const el = document.getElementById(id);
+  if (!el) return;
+  // Flag prevents IO from fighting the scroll mid-journey
+  _navBusy = true;
+  clearTimeout(_navTimer);
+  _navTimer = setTimeout(() => { _navBusy = false; }, 900);
+  // Update active link immediately
+  navLinks.forEach(l => l.classList.remove('active'));
+  const baseId = id.startsWith('e-') ? id.slice(2) : id;
+  const a = document.querySelector(`.day-nav a[href="#${baseId}"]`);
+  if (a) { a.classList.add('active'); a.scrollIntoView({behavior:'instant',block:'nearest',inline:'center'}); }
+  // Single authoritative smooth scroll — avoids conflict with scrollIntoView
+  const stickyH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sticky-h')) || 90;
+  const targetY = el.getBoundingClientRect().top + window.scrollY - stickyH;
+  window.scrollTo({top: targetY, behavior: 'smooth'});
+}
+
+function toggleRes(card) {
+  const wasOpen = card.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.res-card.open').forEach(c => c.classList.remove('open'));
+  // Open clicked one unless it was already open
+  if (!wasOpen) card.classList.add('open');
+}
+
+const navLinks = document.querySelectorAll('.day-nav a');
+const navSectionIds = new Set(Array.from(navLinks).map(a => a.getAttribute('href').slice(1)));
+// Map section id → nav link (e-day1 → a[href="#day1"], day1 → a[href="#day1"])
+function getNavLink(id) {
+  const baseId = id.startsWith('e-') ? id.slice(2) : id;
+  return document.querySelector(`.day-nav a[href="#${baseId}"]`);
+}
+const visibleSections = new Set();
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) visibleSections.add(e.target);
+    else visibleSections.delete(e.target);
+  });
+  requestAnimationFrame(() => {
+    if (_navBusy) return;
+    let topEl = null, topY = Infinity;
+    visibleSections.forEach(el => {
+      if (!getNavLink(el.id)) return;
+      const y = el.getBoundingClientRect().top;
+      if (y < topY) { topY = y; topEl = el; }
+    });
+    if (topEl) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const a = getNavLink(topEl.id);
+      if (a) { a.classList.add('active'); a.scrollIntoView({behavior:'instant',block:'nearest',inline:'center'}); }
+    }
+  });
+}, { rootMargin: '-5% 0px -80% 0px' });
+// Observe both relaxing (day1) and exciting (e-day1) tab sections
+document.querySelectorAll('[id]').forEach(s => {
+  const baseId = s.id.startsWith('e-') ? s.id.slice(2) : s.id;
+  if (navSectionIds.has(baseId)) io.observe(s);
+});
+
+// ── Search ──────────────────────────────────────────────────────────────────
+const searchIndex = [];
+const DAY_COLORS = ['#6B46C1','#C53030','#C05621','#276749','#2B6CB0','#B83280','#553C9A','#285E61','#744210'];
+
+(function buildSearchIndex() {
+  document.querySelectorAll('.day-section').forEach(section => {
+    const tabPane = section.closest('.tab-pane');
+    const tab = tabPane ? tabPane.id.replace('tab-', '') : 'exciting';
+    const sectionId = section.id; // 'day1' or 'e-day1'
+    const dayId = sectionId.startsWith('e-') ? sectionId.slice(2) : sectionId;
+    const dayNum = parseInt(dayId.replace('day', '')) || 0;
+    const h2 = section.querySelector('.day-title-block h2');
+    const dayLabel = h2 ? h2.textContent.split('—')[0].replace(/^[A-Za-z]+,\s*/,'').trim() : '';
+    section.querySelectorAll('.event').forEach(event => {
+      const titleEl = event.querySelector('.event-title');
+      if (!titleEl) return;
+      const body = (event.querySelector('.event-body') || {}).textContent || '';
+      searchIndex.push({
+        title: titleEl.textContent.trim(),
+        body: body.trim(),
+        dayNum, dayLabel, tab, sectionId, event
+      });
+    });
+  });
+})();
+
+function doSearch(q) {
+  const results = document.getElementById('searchResults');
+  const val = q.trim().toLowerCase();
+  if (!val) { results.classList.remove('open'); return; }
+  const matches = searchIndex.filter(item =>
+    item.title.toLowerCase().includes(val) || item.body.toLowerCase().includes(val)
+  ).slice(0, 10);
+  if (!matches.length) {
+    results.innerHTML = '<div class="search-no-results">No results for "' + q + '"</div>';
+    results.classList.add('open');
+    return;
+  }
+  results.innerHTML = matches.map((m, i) => {
+    const color = DAY_COLORS[m.dayNum - 1] || '#6b7280';
+    const idx = searchIndex.indexOf(m);
+    return `<div class="search-result-item" onclick="searchGo(${idx})">
+      <span class="search-day-pill" style="background:${color}22;color:${color};border:1px solid ${color}55">D${m.dayNum}</span>
+      <span class="search-result-title">${m.title}</span>
+      <span class="search-result-day">${m.dayLabel}</span>
+    </div>`;
+  }).join('');
+  results.classList.add('open');
+}
+
+function searchGo(idx) {
+  const item = searchIndex[idx];
+  if (!item) return;
+  if (item.tab !== currentTab) switchTab(item.tab);
+  document.getElementById('searchResults').classList.remove('open');
+  document.getElementById('searchInput').value = '';
+  setTimeout(() => {
+    item.event.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const card = item.event.querySelector('.event-card');
+    if (card) {
+      card.style.outline = '2px solid #8b5cf6';
+      card.style.outlineOffset = '2px';
+      setTimeout(() => { card.style.outline = ''; card.style.outlineOffset = ''; }, 2000);
+    }
+  }, item.tab !== currentTab ? 150 : 50);
+}
+
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('searchWrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('searchResults').classList.remove('open');
+  }
+});
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/utah-sw.js').catch(() => {})
+  })
+}
+</script>
+</body>
+</html>

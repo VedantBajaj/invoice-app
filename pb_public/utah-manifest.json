@@ -1,0 +1,11 @@
+{
+  "name": "Utah Road Trip 2026",
+  "short_name": "Utah Trip",
+  "description": "Feb 27 – Mar 7, 2026 Road Trip Itinerary",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f0f1a",
+  "theme_color": "#0d1117",
+  "orientation": "portrait-primary"
+}
