@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Utah Drive Guide">
+<title>Utah Drive Guide 🎙</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #21262d;
+    --accent: #e07b39; --green: #3fb950; --red: #f85149;
+    --yellow: #d29922; --text: #e6edf3; --muted: #8b949e;
+    --d1:#f59e0b;--d2:#ef4444;--d3:#10b981;--d4:#8b5cf6;
+    --d5:#ec4899;--d6:#06b6d4;--d7:#84cc16;--d8:#f97316;--d9:#14b8a6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow-x: hidden; }
+
+  /* ── Screens ─────────────────────────────────────────────────── */
+  .screen { display: none; min-height: 100vh; padding: 24px 16px 48px; }
+  .screen.active { display: block; }
+
+  /* ── Start screen ────────────────────────────────────────────── */
+  #screen-start { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 24px; padding: 48px 24px; }
+  .start-icon { font-size: 64px; line-height: 1; }
+  .start-title { font-size: 1.8rem; font-weight: 800; color: var(--text); }
+  .start-sub { font-size: 1rem; color: var(--muted); line-height: 1.6; max-width: 320px; }
+  .start-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 16px;
+    padding: 18px 48px; font-size: 1.2rem; font-weight: 700; cursor: pointer;
+    width: 100%; max-width: 320px; margin-top: 8px;
+    box-shadow: 0 4px 24px rgba(224,123,57,0.4);
+  }
+  .start-btn:active { opacity: 0.85; }
+  .warning-box {
+    background: rgba(210,153,34,0.12); border: 1px solid rgba(210,153,34,0.35);
+    border-radius: 12px; padding: 14px 16px; max-width: 320px; text-align: left;
+    font-size: 0.82rem; color: #fbbf24; line-height: 1.5;
+  }
+  .warning-box strong { display: block; margin-bottom: 4px; font-size: 0.85rem; }
+
+  /* ── Active screen ───────────────────────────────────────────── */
+  #screen-active { padding: 0 0 60px; }
+
+  /* Status bar */
+  .status-bar {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 10px 16px; display: flex; align-items: center; gap: 10px;
+  }
+  .gps-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .gps-dot.ok { background: var(--green); animation: pulse 2s infinite; }
+  .gps-dot.warn { background: var(--yellow); }
+  .gps-dot.err { background: var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .gps-label { font-size: 0.78rem; color: var(--muted); flex: 1; }
+  .stop-btn {
+    background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.4);
+    color: var(--red); border-radius: 8px; padding: 6px 14px;
+    font-size: 0.78rem; font-weight: 600; cursor: pointer; flex-shrink: 0;
+  }
+
+  /* Now playing */
+  .now-playing {
+    margin: 16px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px; min-height: 90px;
+  }
+  .now-playing-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+  .now-playing-text { font-size: 1rem; color: var(--text); line-height: 1.5; }
+  .now-playing-text.idle { color: var(--muted); font-style: italic; }
+  .skip-btn {
+    margin-top: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 16px; font-size: 0.8rem; color: var(--muted);
+    cursor: pointer; display: none;
+  }
+  .skip-btn.visible { display: inline-block; }
+  .skip-btn:active { opacity: 0.7; }
+
+  /* Next up */
+  .next-up {
+    margin: 0 16px 16px; background: rgba(224,123,57,0.08);
+    border: 1px solid rgba(224,123,57,0.25); border-radius: 12px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .next-up-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .next-up-label { font-size: 0.72rem; color: var(--accent); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .next-up-name { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+  .next-up-dist { font-size: 0.82rem; color: var(--muted); }
+
+  /* Day tabs */
+  .day-tabs-wrap { padding: 0 16px 8px; overflow-x: auto; scrollbar-width: none; display: flex; gap: 8px; }
+  .day-tabs-wrap::-webkit-scrollbar { display: none; }
+  .day-tab {
+    flex-shrink: 0; padding: 6px 14px; border-radius: 20px; font-size: 0.78rem;
+    font-weight: 600; border: 2px solid transparent; cursor: pointer;
+    background: var(--surface); color: var(--muted);
+  }
+  .day-tab.active { color: #fff; }
+
+  /* POI list */
+  .poi-list { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; }
+  .poi-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; display: flex; align-items: flex-start; gap: 10px;
+    transition: opacity 0.3s;
+  }
+  .poi-card.triggered { opacity: 0.45; }
+  .poi-card.nearby { border-color: var(--accent); background: rgba(224,123,57,0.06); }
+  .poi-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; }
+  .poi-card.triggered .poi-check { background: var(--green); border-color: var(--green); color: #fff; }
+  .poi-card.nearby .poi-check { border-color: var(--accent); }
+  .poi-name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+  .poi-dist { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+  .poi-script { font-size: 0.78rem; color: var(--muted); margin-top: 6px; line-height: 1.45; display: none; }
+  .poi-card.nearby .poi-script { display: block; }
+
+  .day-header-chip {
+    margin: 16px 16px 8px;
+    font-size: 0.8rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  /* Error screen */
+  #screen-error { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 16px; padding: 48px 24px; }
+  .error-icon { font-size: 48px; }
+  .error-msg { font-size: 1rem; color: var(--muted); max-width: 300px; line-height: 1.6; }
+  .retry-btn { background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 14px 32px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- ── Start Screen ──────────────────────────────────────────────── -->
+<div id="screen-start" class="screen active">
+  <div class="start-icon">🎙</div>
+  <div class="start-title">Utah Drive Guide</div>
+  <div class="start-sub">Audio narration for your road trip — plays automatically as you approach each location. Works completely offline.</div>
+  <div class="warning-box">
+    <strong>⚠️ Before you start:</strong>
+    Set your phone's Auto-Lock to <strong>Never</strong> during drives.
+    GPS and audio pause when the screen locks on iOS.
+  </div>
+  <button class="start-btn" id="startBtn" onclick="startDriveMode()">🚗 Start Drive Mode</button>
+</div>
+
+<!-- ── Active Screen ─────────────────────────────────────────────── -->
+<div id="screen-active" class="screen">
+  <!-- Status bar -->
+  <div class="status-bar">
+    <div class="gps-dot" id="gpsDot"></div>
+    <span class="gps-label" id="gpsLabel">Acquiring GPS…</span>
+    <button class="stop-btn" onclick="stopDriveMode()">■ Stop</button>
+  </div>
+
+  <!-- Now playing -->
+  <div class="now-playing">
+    <div class="now-playing-label">🔊 Now playing</div>
+    <div class="now-playing-text idle" id="nowPlayingText">Listening for locations…</div>
+    <button class="skip-btn" id="skipBtn" onclick="skipNarration()">Skip ⏭</button>
+  </div>
+
+  <!-- Next up -->
+  <div class="next-up" id="nextUpCard" style="display:none">
+    <div class="next-up-icon">📍</div>
+    <div>
+      <div class="next-up-label">Next up</div>
+      <div class="next-up-name" id="nextUpName"></div>
+      <div class="next-up-dist" id="nextUpDist"></div>
+    </div>
+  </div>
+
+  <!-- Day tabs -->
+  <div class="day-tabs-wrap" id="dayTabs"></div>
+
+  <!-- POI list -->
+  <div class="poi-list" id="poiList"></div>
+</div>
+
+<!-- ── Error Screen ──────────────────────────────────────────────── -->
+<div id="screen-error" class="screen">
+  <div class="error-icon">📡</div>
+  <div id="errorMsg" class="error-msg">Location access is required. Please allow location access and try again.</div>
+  <button class="retry-btn" onclick="retryFromError()">Try Again</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// POI DATA — All GPS coordinates and narration scripts
+// ═══════════════════════════════════════════════════════════════════
+const TRIP_START = new Date('2026-02-27T00:00:00');
+
+const POIS = [
+  // ── Day 1: SLC → Moab ───────────────────────────────────────────
+  { id:'slc-highway', day:1, name:'Helper Canyon (I-70 approach)', emoji:'🏔',
+    lat:39.6837, lng:-110.8585, radiusMiles:3,
+    script:"You're driving through Helper Canyon — a dramatic stretch where the highway follows the Price River through tall sandstone walls. You're about 90 minutes from Moab." },
+  { id:'moab-arrival', day:1, name:'Moab, Utah', emoji:'🏙',
+    lat:38.5733, lng:-109.5498, radiusMiles:2.5,
+    script:"You've arrived in Moab — gateway to canyon country. Check into Hyatt Place, then walk to Sabaku Sushi on Main Street for dinner. Tomorrow is Arches — get to bed early." },
+
+  // ── Day 2: Arches NP ─────────────────────────────────────────────
+  { id:'arches-entrance', day:2, name:'Arches NP Entrance', emoji:'🏜',
+    lat:38.6165, lng:-109.6194, radiusMiles:0.8,
+    script:"Welcome to Arches National Park — home to over 2,000 natural stone arches, the highest concentration on Earth. The park road is 18 miles out and back. Timed entry closes at 8 AM — you should be good if you're here now." },
+  { id:'balanced-rock', day:2, name:'Balanced Rock', emoji:'🪨',
+    lat:38.7008, lng:-109.5641, radiusMiles:0.4,
+    script:"Balanced Rock is 128 feet tall with a cap rock weighing roughly 3,600 tons. The short loop trail around the base takes 15 minutes and gives a great ground-level perspective." },
+  { id:'windows-section', day:2, name:'Windows Section', emoji:'🔲',
+    lat:38.6870, lng:-109.5374, radiusMiles:0.4,
+    script:"The Windows Section has some of the largest arches in the park. North and South Window are a short flat walk. Double Arch just down the road is even more dramatic — two arches sharing a base. Worth the detour." },
+  { id:'delicate-arch-trailhead', day:2, name:'Delicate Arch Trailhead', emoji:'⛰',
+    lat:38.7359, lng:-109.5215, radiusMiles:0.5,
+    script:"Delicate Arch Trailhead. The hike is 3 miles round trip with 480 feet of gain on slickrock. Plan 2 hours. The arch itself is 52 feet tall and free-standing on the edge of a canyon bowl. Don't rush the finale — it deserves a long look." },
+
+  // ── Day 3: Potash Road + Dead Horse Point ───────────────────────
+  { id:'potash-road', day:3, name:'Potash Road (UT-279)', emoji:'🌊',
+    lat:38.5497, lng:-109.6094, radiusMiles:0.6,
+    script:"You're on Potash Road, following the Colorado River between 800-foot canyon walls. About 5 miles in, watch the left wall for ancient Ute petroglyphs etched into the varnished rock. Stay on the road — no turnoff needed, just slow down." },
+  { id:'dead-horse-point', day:3, name:'Dead Horse Point State Park', emoji:'🌅',
+    lat:38.4829, lng:-109.7393, radiusMiles:1.5,
+    script:"Dead Horse Point ahead. The main viewpoint sits nearly 2,000 feet above the Colorado River as it bends in a horseshoe through Canyonlands. Allow 45 minutes minimum. Sunset timing tonight should be perfect — check the sky." },
+
+  // ── Day 4: Moab → Bryce (LONGEST DAY) ───────────────────────────
+  { id:'goblin-valley', day:4, name:'Goblin Valley Turnoff', emoji:'👾',
+    lat:38.5688, lng:-110.7073, radiusMiles:2,
+    script:"Goblin Valley State Park turnoff is coming up — about 12 minutes off the highway. The mushroom-shaped hoodoos fill an entire valley you can actually walk through. If stopping, allow 45 minutes. If skipping, you're still on schedule." },
+  { id:'factory-butte', day:4, name:'Factory Butte', emoji:'🏔',
+    lat:38.4144, lng:-110.8826, radiusMiles:2,
+    script:"Factory Butte is the dramatic flat-topped mesa ahead on your right — it rises 1,200 feet from the Mancos Shale badlands. Pull over on the highway shoulder for a photo. No hike needed, just a quick stop." },
+  { id:'bicknell', day:4, name:'Bicknell — Curry Pizza', emoji:'🍕',
+    lat:38.3390, lng:-111.5480, radiusMiles:1.5,
+    script:"Welcome to Bicknell, Utah, population 330. Your lunch stop is Curry Pizza. Stock up and eat well here — there's nothing worthwhile to eat until you reach Bryce, about 2 hours away. Fill the gas tank too while you're here." },
+  { id:'capitol-reef-drive', day:4, name:'Capitol Reef Corridor', emoji:'🏛',
+    lat:38.2970, lng:-111.2615, radiusMiles:2,
+    script:"You're passing through Capitol Reef country. The folded rock formation called the Waterpocket Fold runs for 100 miles — you can see the tilted layers from the highway. No need to stop today, just enjoy the views while driving." },
+  { id:'highway-12', day:4, name:'Utah Scenic Byway 12', emoji:'🛣',
+    lat:37.9200, lng:-111.7500, radiusMiles:3,
+    script:"You're now on Utah Highway 12 — one of America's 10 most scenic byways. The next 60 miles wind through Grand Staircase-Escalante National Monument. Take it slow. There are pullouts every few miles. You've earned this view." },
+  { id:'rubys-inn', day:4, name:"Ruby's Inn — Bryce Canyon", emoji:'🏨',
+    lat:37.6702, lng:-112.1556, radiusMiles:1,
+    script:"You've made it — Ruby's Inn is just ahead. You drove nearly 310 miles today. Dinner at the inn's restaurant is your best bet tonight. Buffet or sit-down — both are fine. Tomorrow morning: Bryce Canyon sunrise." },
+
+  // ── Day 5: Bryce Canyon + Kodachrome Basin ───────────────────────
+  { id:'bryce-entrance', day:5, name:'Bryce Canyon National Park', emoji:'🌋',
+    lat:37.6282, lng:-112.1657, radiusMiles:0.8,
+    script:"Welcome to Bryce Canyon — technically not a canyon but a series of natural amphitheaters carved by frost-thaw cycles. The hoodoos can reach 200 feet tall. Orange in morning light, pink at midday, purple at dusk. Every hour looks different." },
+  { id:'bryce-amphitheater', day:5, name:'Bryce Amphitheater', emoji:'🎭',
+    lat:38.6402, lng:-112.1649, radiusMiles:0.5,
+    script:"Bryce Amphitheater has the densest concentration of hoodoos in the park. Sunrise Point and Sunset Point are within a short walk of each other. Inspiration Point, a bit further south, gives the widest panoramic view. Pick at least two." },
+  { id:'kodachrome-basin', day:5, name:'Kodachrome Basin State Park', emoji:'📷',
+    lat:37.5099, lng:-111.9898, radiusMiles:2,
+    script:"Kodachrome Basin State Park ahead — named by National Geographic in 1949 for its vivid colors. The 67 rock spires here are called sand pipes, formed by ancient geysers, and are found almost nowhere else on Earth. Easy flat trails." },
+  { id:'red-canyon', day:5, name:'Red Canyon — UT-12', emoji:'🔴',
+    lat:37.7208, lng:-112.1002, radiusMiles:1,
+    script:"You're driving through Red Canyon — the highway carves right through vivid pink and red hoodoos on both sides. Two tunnels were blasted through the rock in the 1960s. Slow down and look up — it's arguably prettier than some national parks." },
+
+  // ── Day 6: Bryce → Springdale ───────────────────────────────────
+  { id:'us-89-corridor', day:6, name:'Long Valley — US-89', emoji:'🌄',
+    lat:37.4500, lng:-112.5000, radiusMiles:3,
+    script:"You're in Long Valley on US-89 — a quiet agricultural stretch before the landscape shifts toward Zion. The pink cliffs on your left are the top step of the Grand Staircase. Springdale is about 45 minutes ahead." },
+  { id:'springdale-arrival', day:6, name:'Springdale, Utah', emoji:'🏔',
+    lat:37.1888, lng:-112.9998, radiusMiles:1.5,
+    script:"Welcome to Springdale — population 500, but 5 million park visitors a year pass through. The towering red cliffs ahead are the edge of the Zion plateau. Hyatt Place is on the main road. Dinner at Thai Sapa tonight — it's right in town." },
+
+  // ── Day 7: Zion East Side ────────────────────────────────────────
+  { id:'zion-mt-carmel-tunnel', day:7, name:'Zion-Mount Carmel Tunnel', emoji:'🕳',
+    lat:37.2192, lng:-112.9355, radiusMiles:0.6,
+    script:"The Zion-Mount Carmel Tunnel is 1.1 miles long — the longest US highway tunnel when it opened in 1930. Large vehicles need a ranger escort and pay a fee. Stay centered. Two windows cut into the cliff give views into the canyon as you pass through." },
+  { id:'zion-east-side', day:7, name:'Zion East Side', emoji:'🪨',
+    lat:37.2700, lng:-112.8700, radiusMiles:1.5,
+    script:"The Zion East Side is dramatically different from the canyon floor below. White Navajo sandstone with ancient cross-bedded dune patterns — you can see the wind directions from 190 million years ago frozen in the rock. Far fewer crowds up here." },
+
+  // ── Day 8: Zion Canyon ───────────────────────────────────────────
+  { id:'zion-canyon-main', day:8, name:'Zion Canyon Floor', emoji:'🏞',
+    lat:37.2065, lng:-112.9848, radiusMiles:0.8,
+    script:"You're entering Zion Canyon — the Virgin River carved these 2,000-foot walls over millions of years. Drive slowly. Mule deer cross the road without warning. The canyon is about 6 miles long today; there's no rush. Let the walls do the talking." },
+  { id:'zion-lodge', day:8, name:'Zion Lodge Area', emoji:'🏕',
+    lat:37.2586, lng:-112.9726, radiusMiles:0.5,
+    script:"Zion Lodge is the only lodging inside the canyon — built in 1925. The Emerald Pools trailhead starts here: 1.2 miles paved, flat, ending at hanging gardens and a waterfall. Great ankle-friendly option. Grotto picnic area is nearby for lunch." },
+  { id:'riverside-walk', day:8, name:'Riverside Walk / Temple of Sinawava', emoji:'🌊',
+    lat:37.2895, lng:-112.9484, radiusMiles:0.4,
+    script:"Riverside Walk is the end of the road — 2 miles paved, flat, right along the Virgin River. It ends where the canyon narrows into the Narrows slot canyon. If the river's low, take off your shoes and wade in. The walls close to 20 feet wide at the end." },
+
+  // ── Day 9: Snow Canyon → Las Vegas ──────────────────────────────
+  { id:'snow-canyon', day:9, name:'Snow Canyon State Park', emoji:'🌋',
+    lat:37.2043, lng:-113.6404, radiusMiles:1.5,
+    script:"Snow Canyon State Park. The black lava flows here are less than 10,000 years old — practically yesterday in geologic time. Red Navajo sandstone meets black basalt: one of the most striking color contrasts in Utah. Quick stop before the highway." },
+  { id:'st-george', day:9, name:"St. George — Gaia's Garden", emoji:'🥗',
+    lat:37.0965, lng:-113.5684, radiusMiles:2,
+    script:"You're in St. George — Utah's sunniest and fastest-growing city. Gaia's Garden Cafe for lunch. After that, it's I-15 South for 120 miles straight to Las Vegas. Flat, fast, and easy. You're almost done." },
+  { id:'nevada-border', day:9, name:'Nevada State Line', emoji:'🎰',
+    lat:36.8600, lng:-114.0400, radiusMiles:1.5,
+    script:"Crossing into Nevada. Las Vegas is about 80 miles ahead on I-15. When you get to Las Vegas, take I-215 East to the airport. Allow at least 2 hours before departure for the rental return and security. You're in the home stretch." },
+  { id:'las-vegas-arrival', day:9, name:'Las Vegas — Home Stretch', emoji:'✈',
+    lat:36.2200, lng:-115.1537, radiusMiles:5,
+    script:"Las Vegas. Return the rental car, find that Indian restaurant near the terminal, and relax. You just drove through nine days of Utah's canyon country. From Moab to Arches to Bryce to Zion. That was a proper trip. Well done." },
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════
+let watchId = null;
+let triggered = new Set();
+let speaking = false;
+let ttsQueue = [];
+let watchdogTimer = null;
+let lastPos = null;
+let selectedDay = null;
+let wakeLock = null;
+let started = false;
+
+// Detect today's trip day (Day 1 = Feb 27, 2026)
+function todaysTripDay() {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const start = new Date(TRIP_START);
+  start.setHours(0,0,0,0);
+  const diff = Math.round((today - start) / 86400000) + 1;
+  if (diff >= 1 && diff <= 9) return diff;
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// HAVERSINE (great-circle distance in miles)
+// ═══════════════════════════════════════════════════════════════════
+function distMiles(lat1, lng1, lat2, lng2) {
+  const R = 3958.8;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 +
+    Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  // Clamp to avoid NaN from floating point edge cases
+  return R * 2 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, a))));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TTS ENGINE
+// ═══════════════════════════════════════════════════════════════════
+let voiceReady = false;
+let bestVoice = null;
+
+function initVoices() {
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length === 0) return;
+  // Prefer a natural-sounding en-US voice
+  bestVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Samantha'))
+    || voices.find(v => v.lang === 'en-US' && v.name.includes('Karen'))
+    || voices.find(v => v.lang === 'en-US')
+    || voices.find(v => v.lang.startsWith('en'))
+    || voices[0];
+  voiceReady = true;
+}
+
+window.speechSynthesis.onvoiceschanged = initVoices;
+initVoices(); // Try immediately — may work on non-iOS
+
+function unlockTTS() {
+  // iOS requires a user gesture before speaking. Speak a zero-length utterance to unlock.
+  const u = new SpeechSynthesisUtterance('');
+  u.volume = 0;
+  window.speechSynthesis.speak(u);
+}
+
+// Split text into chunks ≤200 chars (iOS silently fails on long utterances)
+function chunkText(text) {
+  // Split on sentence boundaries
+  const raw = text.match(/[^.!?]+[.!?]*/g) || [text];
+  const chunks = [];
+  let cur = '';
+  for (const s of raw) {
+    const trimmed = s.trim();
+    if (!trimmed) continue;
+    if ((cur + ' ' + trimmed).length > 200) {
+      if (cur) chunks.push(cur.trim());
+      cur = trimmed;
+    } else {
+      cur = cur ? (cur + ' ' + trimmed) : trimmed;
+    }
+  }
+  if (cur.trim()) chunks.push(cur.trim());
+  return chunks.length ? chunks : [text.slice(0, 200)];
+}
+
+function speak(text, poiName) {
+  const chunks = chunkText(text);
+  ttsQueue.push(...chunks);
+  updateNowPlaying(poiName || '', text);
+  document.getElementById('skipBtn').classList.add('visible');
+  drainQueue();
+}
+
+function drainQueue() {
+  if (speaking || ttsQueue.length === 0) return;
+  const chunk = ttsQueue.shift();
+  const u = new SpeechSynthesisUtterance(chunk);
+  if (voiceReady && bestVoice) u.voice = bestVoice;
+  u.rate = 0.88;
+  u.pitch = 1.0;
+  speaking = true;
+
+  // Watchdog: if onend doesn't fire within estimated time + 6s, force next
+  const estimatedMs = (chunk.length / 12) * 1000 + 6000;
+  clearTimeout(watchdogTimer);
+  watchdogTimer = setTimeout(() => {
+    speaking = false;
+    drainQueue();
+  }, estimatedMs);
+
+  u.onend = () => {
+    clearTimeout(watchdogTimer);
+    speaking = false;
+    if (ttsQueue.length === 0) {
+      document.getElementById('skipBtn').classList.remove('visible');
+      updateNowPlaying('', '');
+    }
+    drainQueue();
+  };
+  u.onerror = (e) => {
+    clearTimeout(watchdogTimer);
+    speaking = false;
+    drainQueue();
+  };
+
+  window.speechSynthesis.speak(u);
+}
+
+function skipNarration() {
+  clearTimeout(watchdogTimer);
+  ttsQueue = [];
+  speaking = false;
+  window.speechSynthesis.cancel();
+  document.getElementById('skipBtn').classList.remove('visible');
+  updateNowPlaying('', '');
+}
+
+function updateNowPlaying(name, text) {
+  const el = document.getElementById('nowPlayingText');
+  if (!name && !text) {
+    el.textContent = 'Listening for locations…';
+    el.classList.add('idle');
+  } else {
+    el.textContent = text.slice(0, 180) + (text.length > 180 ? '…' : '');
+    el.classList.remove('idle');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VISIBILITY — iOS pauses speechSynthesis when backgrounded
+// ═══════════════════════════════════════════════════════════════════
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    // Resume if paused (iOS bug: stays in paused state after foreground)
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// WAKE LOCK (Chrome/Android only — keeps screen on)
+// ═══════════════════════════════════════════════════════════════════
+async function requestWakeLock() {
+  if ('wakeLock' in navigator) {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+    } catch(_) {}
+  }
+}
+
+// Re-acquire wake lock if released (e.g., on tab switch back)
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible' && wakeLock && started) {
+    try { wakeLock = await navigator.wakeLock.request('screen'); } catch(_) {}
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// GPS TRACKING
+// ═══════════════════════════════════════════════════════════════════
+function onPosition(pos) {
+  const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+
+  // Ignore garbage reads (>200m accuracy)
+  if (accuracy > 200) {
+    setGpsStatus('warn', `Weak signal (±${Math.round(accuracy)}m)`);
+    return;
+  }
+
+  lastPos = { lat, lng };
+  setGpsStatus('ok', `GPS ±${Math.round(accuracy)}m`);
+
+  // Compute distances to all untriggered POIs in the selected day
+  const activePOIs = POIS.filter(p => !triggered.has(p.id) && (selectedDay === null || p.day === selectedDay));
+  let nearest = null;
+  let nearestDist = Infinity;
+
+  for (const poi of activePOIs) {
+    const d = distMiles(lat, lng, poi.lat, poi.lng);
+    if (d <= poi.radiusMiles && d < nearestDist) {
+      nearest = poi;
+      nearestDist = d;
+    }
+  }
+
+  if (nearest) {
+    triggered.add(nearest.id);
+    renderPoiList(); // refresh checkmarks
+    speak(nearest.script, nearest.name);
+  }
+
+  updateNextUp(lat, lng);
+  renderPoiList();
+}
+
+function onPositionError(err) {
+  if (err.code === err.PERMISSION_DENIED) {
+    showError('Location access was denied. Please enable it in Settings → Privacy → Location, then try again.');
+  } else if (err.code === err.TIMEOUT) {
+    setGpsStatus('warn', 'GPS timeout — still trying…');
+  } else {
+    setGpsStatus('warn', 'GPS unavailable — still trying…');
+  }
+}
+
+function setGpsStatus(state, label) {
+  const dot = document.getElementById('gpsDot');
+  const lbl = document.getElementById('gpsLabel');
+  dot.className = 'gps-dot ' + state;
+  lbl.textContent = label;
+}
+
+function updateNextUp(lat, lng) {
+  // Find nearest untriggered POI (regardless of selected day)
+  let nearest = null;
+  let nearestDist = Infinity;
+  for (const poi of POIS) {
+    if (triggered.has(poi.id)) continue;
+    const d = distMiles(lat, lng, poi.lat, poi.lng);
+    if (d < nearestDist) {
+      nearest = poi;
+      nearestDist = d;
+    }
+  }
+  const card = document.getElementById('nextUpCard');
+  if (!nearest) { card.style.display = 'none'; return; }
+  card.style.display = 'flex';
+  document.getElementById('nextUpName').textContent = nearest.emoji + ' ' + nearest.name;
+  const miles = nearestDist.toFixed(1);
+  document.getElementById('nextUpDist').textContent =
+    nearestDist < 0.2 ? 'You are here!' :
+    nearestDist < 1 ? `${(nearestDist * 5280).toFixed(0)} ft away` :
+    `${miles} mile${miles !== '1.0' ? 's' : ''} away · Day ${nearest.day}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// UI — Day tabs + POI list
+// ═══════════════════════════════════════════════════════════════════
+const DAY_NAMES = {
+  1: 'D1 · SLC→Moab', 2: 'D2 · Arches', 3: 'D3 · Potash+DHP',
+  4: 'D4 · Bryce Drive', 5: 'D5 · Bryce+Kodachrome',
+  6: 'D6 · →Springdale', 7: 'D7 · Zion East',
+  8: 'D8 · Zion Canyon', 9: 'D9 · →Vegas'
+};
+const DAY_COLORS = ['','--d1','--d2','--d3','--d4','--d5','--d6','--d7','--d8','--d9'];
+
+function buildDayTabs() {
+  const container = document.getElementById('dayTabs');
+  const days = [...new Set(POIS.map(p => p.day))].sort((a,b) => a-b);
+
+  // "All" tab
+  const allTab = document.createElement('button');
+  allTab.className = 'day-tab' + (selectedDay === null ? ' active' : '');
+  allTab.textContent = 'All';
+  allTab.style.borderColor = selectedDay === null ? 'var(--accent)' : 'transparent';
+  allTab.style.color = selectedDay === null ? 'var(--accent)' : '';
+  allTab.onclick = () => selectDay(null);
+  container.appendChild(allTab);
+
+  for (const d of days) {
+    const tab = document.createElement('button');
+    tab.className = 'day-tab' + (selectedDay === d ? ' active' : '');
+    tab.textContent = DAY_NAMES[d] || ('Day ' + d);
+    const color = `var(${DAY_COLORS[d]})`;
+    if (selectedDay === d) {
+      tab.style.borderColor = color;
+      tab.style.color = color;
+    }
+    tab.onclick = () => selectDay(d);
+    container.appendChild(tab);
+  }
+}
+
+function selectDay(day) {
+  selectedDay = day;
+  document.getElementById('dayTabs').innerHTML = '';
+  buildDayTabs();
+  renderPoiList();
+}
+
+function renderPoiList() {
+  const container = document.getElementById('poiList');
+  container.innerHTML = '';
+  const filtered = selectedDay === null ? POIS : POIS.filter(p => p.day === selectedDay);
+
+  let curDay = null;
+  for (const poi of filtered) {
+    if (selectedDay === null && poi.day !== curDay) {
+      curDay = poi.day;
+      const hdr = document.createElement('div');
+      hdr.className = 'day-header-chip';
+      hdr.style.color = `var(${DAY_COLORS[poi.day]})`;
+      hdr.textContent = 'Day ' + poi.day + ' — ' + (DAY_NAMES[poi.day] || '');
+      container.appendChild(hdr);
+    }
+
+    const dist = lastPos ? distMiles(lastPos.lat, lastPos.lng, poi.lat, poi.lng) : null;
+    const isNearby = dist !== null && dist <= poi.radiusMiles * 2;
+    const isTriggered = triggered.has(poi.id);
+
+    const card = document.createElement('div');
+    card.className = 'poi-card' + (isTriggered ? ' triggered' : '') + (isNearby && !isTriggered ? ' nearby' : '');
+
+    const check = document.createElement('div');
+    check.className = 'poi-check';
+    check.textContent = isTriggered ? '✓' : '';
+    card.appendChild(check);
+
+    const info = document.createElement('div');
+    info.style.flex = '1';
+
+    const name = document.createElement('div');
+    name.className = 'poi-name';
+    name.textContent = poi.emoji + ' ' + poi.name;
+    info.appendChild(name);
+
+    if (dist !== null) {
+      const distEl = document.createElement('div');
+      distEl.className = 'poi-dist';
+      distEl.textContent = isTriggered ? 'Played ✓' :
+        dist < 0.1 ? 'You are here' :
+        dist < 1 ? `${(dist * 5280).toFixed(0)} ft` :
+        `${dist.toFixed(1)} mi`;
+      info.appendChild(distEl);
+    }
+
+    // Show script snippet if nearby
+    if (isNearby && !isTriggered) {
+      const script = document.createElement('div');
+      script.className = 'poi-script';
+      script.textContent = '"' + poi.script.slice(0, 100) + '…"';
+      info.appendChild(script);
+    }
+
+    card.appendChild(info);
+
+    // Tap to replay (if triggered)
+    if (isTriggered) {
+      card.style.cursor = 'pointer';
+      card.title = 'Tap to replay';
+      card.onclick = () => { speak(poi.script, poi.name); };
+    }
+
+    container.appendChild(card);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SCREENS
+// ═══════════════════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
+  const el = document.getElementById(id);
+  el.style.display = id === 'screen-start' ? 'flex' : 'block';
+  el.classList.add('active');
+}
+
+function showError(msg) {
+  document.getElementById('errorMsg').textContent = msg;
+  showScreen('screen-error');
+}
+
+function retryFromError() {
+  showScreen('screen-start');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// START / STOP
+// ═══════════════════════════════════════════════════════════════════
+function startDriveMode() {
+  if (started) return;
+  started = true;
+
+  const btn = document.getElementById('startBtn');
+  btn.disabled = true;
+  btn.textContent = 'Starting…';
+
+  // iOS TTS unlock — must happen in this click handler
+  unlockTTS();
+
+  // Re-init voices (may not have been ready before)
+  initVoices();
+
+  // Wake lock (Chrome/Android)
+  requestWakeLock();
+
+  // Default to today's day
+  const today = todaysTripDay();
+  selectedDay = today; // null means "all"
+
+  // Build UI
+  showScreen('screen-active');
+  buildDayTabs();
+  renderPoiList();
+
+  // Start GPS
+  if (!navigator.geolocation) {
+    showError('Geolocation is not supported by this browser.');
+    return;
+  }
+
+  watchId = navigator.geolocation.watchPosition(
+    onPosition,
+    onPositionError,
+    { enableHighAccuracy: true, maximumAge: 8000, timeout: 30000 }
+  );
+}
+
+function stopDriveMode() {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  skipNarration();
+  if (wakeLock) { wakeLock.release().catch(()=>{}); wakeLock = null; }
+  started = false;
+  showScreen('screen-start');
+  document.getElementById('startBtn').disabled = false;
+  document.getElementById('startBtn').textContent = '🚗 Start Drive Mode';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CLEANUP
+// ═══════════════════════════════════════════════════════════════════
+window.addEventListener('beforeunload', () => {
+  if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+  window.speechSynthesis.cancel();
+  clearTimeout(watchdogTimer);
+  if (wakeLock) wakeLock.release().catch(()=>{});
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// SERVICE WORKER — Register for offline
+// ═══════════════════════════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/utah-sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>

@@ -1,10 +1,12 @@
-const CACHE = 'utah-v3'
+const CACHE = 'utah-v4'
 
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(c =>
       // allSettled so missing files don't break install
-      Promise.allSettled(['/', '/utah_v4.html', '/index.html'].map(u => c.add(u)))
+      Promise.allSettled(
+        ['/', '/utah_v4.html', '/index.html', '/guide.html'].map(u => c.add(u))
+      )
     )
   )
   self.skipWaiting()
