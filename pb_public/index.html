@@ -279,7 +279,7 @@
             </div>
             <div x-show="$store.cart.items.length === 0" class="text-center py-4 text-gray-300 text-sm">Scan or search to add items</div>
             <div class="space-y-2">
-              <template x-for="(item, idx) in $store.cart.items" :key="item.product_id">
+              <template x-for="(item, idx) in $store.cart.items" :key="idx">
                 <div class="bg-white rounded-lg p-3 shadow-sm">
                   <div class="flex justify-between items-start mb-2">
                     <div class="flex-1 mr-2">
@@ -1330,7 +1330,7 @@
           return;
         }
       });
-      navigator.serviceWorker.register("/sw.js").then((reg) => {
+      navigator.serviceWorker.register("/sw.js?v=74").then((reg) => {
         // Check for updates every 60 seconds
         setInterval(() => reg.update(), 60000);
         // When a new SW activates, reload to get fresh assets
