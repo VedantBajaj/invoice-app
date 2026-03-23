@@ -1316,7 +1316,7 @@
   <script src="/js/pages/import.js?v=78"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
   <script>
-    const APP_VERSION = 74;
+    const APP_VERSION = 75;
     if ("serviceWorker" in navigator) {
       // Check if we're on a stale cache and force-update
       caches.keys().then(async (keys) => {
@@ -1330,7 +1330,7 @@
           return;
         }
       });
-      navigator.serviceWorker.register("/sw.js?v=74").then((reg) => {
+      navigator.serviceWorker.register("/sw.js?v=75").then((reg) => {
         // Check for updates every 60 seconds
         setInterval(() => reg.update(), 60000);
         // When a new SW activates, reload to get fresh assets
